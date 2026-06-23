@@ -115,6 +115,50 @@
     min-height: 400px;
   }
 
+  /* Tab Switcher */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+  }
+  .tab-item {
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-light);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tab-item:hover {
+    color: var(--primary-light);
+  }
+  .tab-item.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+  .tab-item .tab-count {
+    display: inline-block;
+    background: var(--border);
+    color: var(--text-light);
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    margin-left: 6px;
+    font-weight: 500;
+  }
+  .tab-item.active .tab-count {
+    background: var(--info-light);
+    color: var(--primary);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
   /* Form */
   .form-section {
     margin-bottom: 24px;
@@ -273,6 +317,20 @@
     border: 1.5px solid var(--border);
   }
   .btn-secondary:hover { border-color: var(--text-light); }
+  .btn-small {
+    padding: 6px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  .btn-accent {
+    background: var(--accent);
+    color: white;
+    border: none;
+  }
+  .btn-accent:hover {
+    background: var(--accent-light);
+    color: var(--primary);
+  }
   .btn-actions {
     display: flex;
     gap: 12px;
@@ -280,6 +338,227 @@
     margin-top: 24px;
     padding-top: 20px;
     border-top: 1px solid var(--border);
+  }
+
+  /* My Records List */
+  .my-records-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .name-lookup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .name-lookup input {
+    padding: 8px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    width: 180px;
+  }
+  .name-lookup input:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(44,95,138,0.1);
+  }
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-light);
+  }
+  .empty-state .empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+  .empty-state .empty-text {
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+  .empty-state .empty-hint {
+    font-size: 13px;
+    color: #b0b8c4;
+  }
+
+  /* Record Card */
+  .record-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .record-card:hover {
+    box-shadow: var(--shadow-hover);
+  }
+  .record-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .record-card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+  .record-product {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .record-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .status-badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .status-pending {
+    background: var(--warning-light);
+    color: var(--warning);
+  }
+  .status-completed {
+    background: var(--success-light);
+    color: var(--success);
+  }
+  .urgency-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .urgency-dot.low { background: var(--success); }
+  .urgency-dot.medium { background: var(--warning); }
+  .urgency-dot.high { background: var(--danger); }
+  .record-date {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+  .record-card-expand {
+    font-size: 12px;
+    color: var(--text-light);
+    transition: transform 0.2s;
+  }
+  .record-card.expanded .record-card-expand {
+    transform: rotate(180deg);
+  }
+
+  .record-card-body {
+    display: none;
+    padding: 0 18px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .record-card.expanded .record-card-body {
+    display: block;
+  }
+  .detail-row {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label {
+    width: 120px;
+    flex-shrink: 0;
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+  .detail-value {
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.7;
+  }
+  .category-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    background: var(--info-light);
+    color: var(--primary);
+    margin-right: 4px;
+    margin-bottom: 4px;
+  }
+  .urgency-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+  }
+  .urgency-text.low { color: var(--success); }
+  .urgency-text.medium { color: var(--warning); }
+  .urgency-text.high { color: var(--danger); }
+
+  /* Supplements Section */
+  .supplements-section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .supplements-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .supplement-item {
+    background: #f8f9fb;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--accent);
+  }
+  .supplement-content {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .supplement-time {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+  .supplement-input-area {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    align-items: flex-end;
+  }
+  .supplement-input-area textarea {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    min-height: 60px;
+    resize: vertical;
+    font-family: inherit;
+    background: #fafbfc;
+  }
+  .supplement-input-area textarea:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(44,95,138,0.1);
+    background: white;
   }
 
   /* Toast */
@@ -318,12 +597,39 @@
     to { opacity: 0; }
   }
 
+  /* Loading */
+  .loading-spinner {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-light);
+    font-size: 14px;
+  }
+  .loading-spinner::before {
+    content: '';
+    display: inline-block;
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
   /* Responsive */
   @media (max-width: 768px) {
     .form-grid { grid-template-columns: 1fr; }
     .header { padding: 0 16px; }
     .main { padding: 16px 12px 40px; }
     .urgency-selector { flex-direction: column; }
+    .detail-row { flex-direction: column; gap: 4px; }
+    .detail-label { width: auto; }
+    .supplement-input-area { flex-direction: column; }
+    .name-lookup input { width: 140px; }
+    .tab-item { padding: 10px 16px; font-size: 14px; }
   }
 </style>
 </head>
@@ -350,116 +656,144 @@
 <!-- Main -->
 <div class="main">
   <div class="content-area">
-    <form id="submitForm" novalidate>
 
-      <div class="form-section">
-        <div class="form-section-title">
-          <span class="icon">1</span>
-          产品信息
-        </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">产品名称<span class="required">*</span></label>
-            <input class="form-input" id="productName" placeholder="如：XX稳健增值1号集合资管计划" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">投资经理<span class="required">*</span></label>
-            <select class="form-select" id="investManager" required>
-              <option value="">请选择</option>
-              <option value="王涛">王涛</option>
-              <option value="邵骏腾">邵骏腾</option>
-              <option value="上官佳依">上官佳依</option>
-              <option value="宋哲君">宋哲君</option>
-            </select>
-          </div>
-        </div>
-      </div>
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <div class="tab-item active" data-tab="submit">议题提报</div>
+      <div class="tab-item" data-tab="myrecords">我的提报<span class="tab-count" id="myRecordCount">0</span></div>
+    </div>
 
-      <div class="form-section">
-        <div class="form-section-title">
-          <span class="icon">2</span>
-          议题分类与紧急度
-        </div>
-        <div class="form-grid">
-          <div class="form-group full">
-            <label class="form-label">议题分类<span class="required">*</span></label>
-            <div class="category-tags" id="categoryTags">
-              <div class="category-tag" data-value="业绩不达预期">业绩不达预期</div>
-              <div class="category-tag" data-value="投资策略疑问">投资策略疑问</div>
-              <div class="category-tag" data-value="交易运营投诉">交易运营投诉</div>
-              <div class="category-tag" data-value="其他">其他</div>
+    <!-- Tab: 提交表单 -->
+    <div class="tab-content active" id="tab-submit">
+      <form id="submitForm" novalidate>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <span class="icon">1</span>
+            产品信息
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">产品名称<span class="required">*</span></label>
+              <input class="form-input" id="productName" placeholder="如：XX稳健增值1号集合资管计划" required>
             </div>
-          </div>
-          <div class="form-group full">
-            <label class="form-label">紧急程度<span class="required">*</span></label>
-            <div class="urgency-selector" id="urgencySelector">
-              <div class="urgency-option low" data-value="low">
-                🟢 一般<br><small>可在复盘会中做常规运作讨论</small>
-              </div>
-              <div class="urgency-option medium" data-value="medium">
-                🟡 较急<br><small>客户不满，但仍愿意观察一段时间</small>
-              </div>
-              <div class="urgency-option high" data-value="high">
-                🔴 紧急<br><small>客户反馈较强烈，需要尽快响应</small>
-              </div>
+            <div class="form-group">
+              <label class="form-label">投资经理<span class="required">*</span></label>
+              <select class="form-select" id="investManager" required>
+                <option value="">请选择</option>
+                <option value="王涛">王涛</option>
+                <option value="邵骏腾">邵骏腾</option>
+                <option value="上官佳依">上官佳依</option>
+                <option value="宋哲君">宋哲君</option>
+              </select>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="form-section">
-        <div class="form-section-title">
-          <span class="icon">3</span>
-          议题详情
+        <div class="form-section">
+          <div class="form-section-title">
+            <span class="icon">2</span>
+            议题分类与紧急度
+          </div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">议题分类<span class="required">*</span></label>
+              <div class="category-tags" id="categoryTags">
+                <div class="category-tag" data-value="业绩不达预期">业绩不达预期</div>
+                <div class="category-tag" data-value="投资策略疑问">投资策略疑问</div>
+                <div class="category-tag" data-value="交易运营投诉">交易运营投诉</div>
+                <div class="category-tag" data-value="其他">其他</div>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">紧急程度<span class="required">*</span></label>
+              <div class="urgency-selector" id="urgencySelector">
+                <div class="urgency-option low" data-value="low">
+                  🟢 一般<br><small>可在复盘会中做常规运作讨论</small>
+                </div>
+                <div class="urgency-option medium" data-value="medium">
+                  🟡 较急<br><small>客户不满，但仍愿意观察一段时间</small>
+                </div>
+                <div class="urgency-option high" data-value="high">
+                  🔴 紧急<br><small>客户反馈较强烈，需要尽快响应</small>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="form-grid">
-          <div class="form-group full">
-            <label class="form-label">提报原因<span class="required">*</span></label>
-            <textarea class="form-textarea" id="reason" placeholder="请描述为什么该产品需要在复盘中讨论，包括但不限于：&#10;- 客户具体反馈了什么？&#10;- 业绩与预期偏差有多大？&#10;- 是否已与投资经理沟通过，对方态度如何？&#10;- 如不处理可能产生什么后果？" required></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">是否已与投资经理沟通</label>
-            <select class="form-select" id="communicated">
-              <option value="">请选择</option>
-              <option value="是，投资已沟通，但仍不能满足客户需求">是，投资已沟通，但仍不能满足客户需求</option>
-              <option value="否，客户拒绝单独沟通">否，客户拒绝单独沟通</option>
-              <option value="否，需要协调最近可用的投资经理时间">否，需要协调最近可用的投资经理时间</option>
-              <option value="其他">其他</option>
-            </select>
-          </div>
-          <div class="form-group full">
-            <label class="form-label">补充说明</label>
-            <textarea class="form-textarea" id="additionalNote" placeholder="其他需要补充的信息" style="min-height:60px"></textarea>
-          </div>
-        </div>
-      </div>
 
-      <div class="form-section">
-        <div class="form-section-title">
-          <span class="icon">4</span>
-          提报人信息
+        <div class="form-section">
+          <div class="form-section-title">
+            <span class="icon">3</span>
+            议题详情
+          </div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">提报原因<span class="required">*</span></label>
+              <textarea class="form-textarea" id="reason" placeholder="请描述为什么该产品需要在复盘中讨论，包括但不限于：&#10;- 客户具体反馈了什么？&#10;- 业绩与预期偏差有多大？&#10;- 是否已与投资经理沟通过，对方态度如何？&#10;- 如不处理可能产生什么后果？" required></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">是否已与投资经理沟通</label>
+              <select class="form-select" id="communicated">
+                <option value="">请选择</option>
+                <option value="是，投资已沟通，但仍不能满足客户需求">是，投资已沟通，但仍不能满足客户需求</option>
+                <option value="否，客户拒绝单独沟通">否，客户拒绝单独沟通</option>
+                <option value="否，需要协调最近可用的投资经理时间">否，需要协调最近可用的投资经理时间</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">补充说明</label>
+              <textarea class="form-textarea" id="additionalNote" placeholder="其他需要补充的信息" style="min-height:60px"></textarea>
+            </div>
+          </div>
         </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">客户经理姓名<span class="required">*</span></label>
-            <input class="form-input" id="submitterName" placeholder="您的姓名" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">所属部门</label>
-            <input class="form-input" id="submitterDept" placeholder="如：财富管理部">
-          </div>
-          <div class="form-group">
-            <label class="form-label">提报日期</label>
-            <input class="form-input" id="submitDate" type="date" readonly>
-          </div>
-        </div>
-      </div>
 
-      <div class="btn-actions">
-        <button type="button" class="btn btn-secondary" onclick="resetForm()">清空表单</button>
-        <button type="submit" class="btn btn-primary" id="submitBtn">提交议题</button>
+        <div class="form-section">
+          <div class="form-section-title">
+            <span class="icon">4</span>
+            提报人信息
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">客户经理姓名<span class="required">*</span></label>
+              <input class="form-input" id="submitterName" placeholder="您的姓名" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">所属部门</label>
+              <input class="form-input" id="submitterDept" placeholder="如：财富管理部">
+            </div>
+            <div class="form-group">
+              <label class="form-label">提报日期</label>
+              <input class="form-input" id="submitDate" type="date" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-actions">
+          <button type="button" class="btn btn-secondary" onclick="resetForm()">清空表单</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">提交议题</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tab: 我的提报 -->
+    <div class="tab-content" id="tab-myrecords">
+      <div class="my-records-header">
+        <div class="name-lookup">
+          <input type="text" id="lookupName" placeholder="输入您的姓名">
+          <button class="btn btn-primary btn-small" onclick="loadMyRecords()">查询</button>
+        </div>
       </div>
-    </form>
+      <div id="myRecordsList">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">输入姓名查看您的提报记录</div>
+          <div class="empty-hint">只有您自己提报的记录会显示在这里</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -469,6 +803,17 @@
 <script>
 // ========== API 配置 ==========
 const API_BASE = '/api/records';
+let myCachedRecords = [];
+
+// ========== Tab Switch ==========
+document.querySelectorAll('.tab-item').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
 
 // ========== Category Tags ==========
 document.querySelectorAll('.category-tag').forEach(tag => {
@@ -487,6 +832,11 @@ document.querySelectorAll('.urgency-option').forEach(opt => {
 
 // ========== Set Today's Date ==========
 document.getElementById('submitDate').value = new Date().toISOString().split('T')[0];
+
+// ========== 提交后自动填充姓名到查询框 ==========
+function syncNameToLookup(name) {
+  document.getElementById('lookupName').value = name;
+}
 
 // ========== Form Submit ==========
 document.getElementById('submitForm').addEventListener('submit', async function(e) {
@@ -537,7 +887,11 @@ document.getElementById('submitForm').addEventListener('submit', async function(
 
     if (data.success) {
       showToast('议题提报成功！已加入复盘议题池', 'success');
+      syncNameToLookup(submitterName);
       resetForm();
+      // 切换到"我的提报"并自动刷新
+      document.querySelector('.tab-item[data-tab="myrecords"]').click();
+      loadMyRecords();
     } else {
       showToast('提交失败：' + (data.message || '未知错误'), 'error');
     }
@@ -556,6 +910,197 @@ function resetForm() {
   document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('selected'));
   document.querySelectorAll('.urgency-option').forEach(o => o.classList.remove('selected'));
   document.getElementById('submitDate').value = new Date().toISOString().split('T')[0];
+}
+
+// ========== Load My Records ==========
+async function loadMyRecords() {
+  const name = document.getElementById('lookupName').value.trim();
+  if (!name) {
+    showToast('请输入您的姓名', 'error');
+    return;
+  }
+
+  // 更新头部显示
+  document.getElementById('userAvatar').textContent = name.charAt(0);
+  document.getElementById('currentUser').textContent = name;
+
+  const listEl = document.getElementById('myRecordsList');
+  listEl.innerHTML = '<div class="loading-spinner">加载中...</div>';
+
+  try {
+    const res = await fetch(`${API_BASE}/by-submitter/${encodeURIComponent(name)}`);
+    const data = await res.json();
+
+    if (data.success) {
+      myCachedRecords = data.data;
+      document.getElementById('myRecordCount').textContent = myCachedRecords.length;
+      renderMyRecords(myCachedRecords);
+    } else {
+      listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-text">查询失败</div></div>';
+    }
+  } catch (err) {
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-text">网络错误，请重试</div></div>';
+    console.error('查询失败:', err);
+  }
+}
+
+// ========== 回车查询 ==========
+document.getElementById('lookupName').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    loadMyRecords();
+  }
+});
+
+// ========== Render My Records ==========
+function renderMyRecords(records) {
+  const listEl = document.getElementById('myRecordsList');
+
+  if (records.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">暂无提报记录</div>
+        <div class="empty-hint">提交议题后将在此处显示</div>
+      </div>`;
+    return;
+  }
+
+  listEl.innerHTML = records.map(r => renderRecordCard(r)).join('');
+}
+
+function renderRecordCard(r) {
+  const urgencyMap = {
+    low: { label: '一般', cls: 'low' },
+    medium: { label: '较急', cls: 'medium' },
+    high: { label: '紧急', cls: 'high' }
+  };
+  const u = urgencyMap[r.urgency] || urgencyMap.low;
+  const statusLabel = r.status === 'completed' ? '已复盘' : '未复盘';
+  const statusCls = r.status === 'completed' ? 'status-completed' : 'status-pending';
+  const dateStr = r.submitDate || (r.createdAt ? new Date(r.createdAt).toLocaleDateString('zh-CN') : '-');
+
+  let supplementsHTML = '';
+  if (r.supplements && r.supplements.length > 0) {
+    supplementsHTML = `
+      <div class="supplements-section">
+        <div class="supplements-title">📝 追加补充 (${r.supplements.length})</div>
+        ${r.supplements.map(s => `
+          <div class="supplement-item">
+            <div class="supplement-content">${escapeHtml(s.content)}</div>
+            <div class="supplement-time">${formatTime(s.createdAt)}</div>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+
+  return `
+    <div class="record-card" id="card-${r.id}">
+      <div class="record-card-header" onclick="toggleCard('${r.id}')">
+        <div class="record-card-left">
+          <span class="urgency-dot ${u.cls}"></span>
+          <span class="record-product">${escapeHtml(r.productName)}</span>
+        </div>
+        <div class="record-meta">
+          <span class="status-badge ${statusCls}">${statusLabel}</span>
+          <span class="record-date">${dateStr}</span>
+          <span class="record-card-expand">▼</span>
+        </div>
+      </div>
+      <div class="record-card-body">
+        <div class="detail-row">
+          <div class="detail-label">投资经理</div>
+          <div class="detail-value">${escapeHtml(r.investManager || '-')}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">议题分类</div>
+          <div class="detail-value">${(r.categories || []).map(c => `<span class="category-badge">${escapeHtml(c)}</span>`).join('')}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">紧急程度</div>
+          <div class="detail-value"><span class="urgency-text ${u.cls}"><span class="urgency-dot ${u.cls}"></span>${u.label}</span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">提报原因</div>
+          <div class="detail-value">${escapeHtml(r.reason || '-')}</div>
+        </div>
+        ${r.communicated ? `<div class="detail-row"><div class="detail-label">沟通情况</div><div class="detail-value">${escapeHtml(r.communicated)}</div></div>` : ''}
+        ${r.additionalNote ? `<div class="detail-row"><div class="detail-label">补充说明</div><div class="detail-value">${escapeHtml(r.additionalNote)}</div></div>` : ''}
+        <div class="detail-row">
+          <div class="detail-label">所属部门</div>
+          <div class="detail-value">${escapeHtml(r.submitterDept || '-')}</div>
+        </div>
+
+        ${supplementsHTML}
+
+        <div class="supplement-input-area">
+          <textarea id="supplement-${r.id}" placeholder="追加补充说明（如有新情况可在此补充）"></textarea>
+          <button class="btn btn-accent btn-small" onclick="submitSupplement('${r.id}')">追加</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ========== Toggle Card Expand ==========
+function toggleCard(id) {
+  const card = document.getElementById('card-' + id);
+  if (card) card.classList.toggle('expanded');
+}
+
+// ========== Submit Supplement ==========
+async function submitSupplement(recordId) {
+  const textarea = document.getElementById('supplement-' + recordId);
+  const content = textarea.value.trim();
+
+  if (!content) {
+    showToast('请输入补充内容', 'error');
+    return;
+  }
+
+  const btn = textarea.nextElementSibling;
+  btn.disabled = true;
+  btn.textContent = '提交中...';
+
+  try {
+    const res = await fetch(`${API_BASE}/${recordId}/supplement`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('补充说明已追加', 'success');
+      // 刷新列表
+      await loadMyRecords();
+      // 重新展开该卡片
+      setTimeout(() => {
+        const card = document.getElementById('card-' + recordId);
+        if (card) card.classList.add('expanded');
+      }, 100);
+    } else {
+      showToast('追加失败：' + (data.message || '未知错误'), 'error');
+    }
+  } catch (err) {
+    showToast('网络错误，追加失败', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '追加';
+  }
+}
+
+// ========== Utils ==========
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
 // ========== Toast ==========

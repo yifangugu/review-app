@@ -1025,6 +1025,17 @@ function renderList() {
           ${escHtml(r.reason)}
           ${r.additionalNote ? `<br><br><em style="color:var(--text-light)">补充：${escHtml(r.additionalNote)}</em>` : ''}
         </div>
+        ${r.supplements && r.supplements.length > 0 ? `
+          <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)">
+            <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:6px">📝 追加补充 (${r.supplements.length})</div>
+            ${r.supplements.map(s => `
+              <div style="background:#f8f9fb;border-left:3px solid var(--accent);border-radius:4px;padding:6px 10px;margin-bottom:6px">
+                <div style="font-size:13px">${escHtml(s.content)}</div>
+                <div style="font-size:11px;color:var(--text-light);margin-top:2px">${formatTime(s.createdAt)}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
       </div>
       <div class="record-footer">
         <div class="record-meta">
@@ -1297,7 +1308,7 @@ function exportCSV() {
   const urgencyLabel = { low: '一般', medium: '较急', high: '紧急' };
   const statusLabel = { pending: '未复盘', completed: '已复盘' };
 
-  const headers = ['产品名称', '投资经理', '议题分类', '紧急程度', '提报原因', '是否已沟通', '补充说明', '提报人', '所属部门', '提报日期', '状态', '提交时间'];
+  const headers = ['产品名称', '投资经理', '议题分类', '紧急程度', '提报原因', '是否已沟通', '补充说明', '追加补充', '提报人', '所属部门', '提报日期', '状态', '提交时间'];
   const rows = records.map(r => [
     csvEscape(r.productName),
     csvEscape(r.investManager),
@@ -1306,6 +1317,7 @@ function exportCSV() {
     csvEscape(r.reason),
     csvEscape(r.communicated),
     csvEscape(r.additionalNote),
+    csvEscape((r.supplements || []).map(s => `[${formatTime(s.createdAt)}] ${s.content}`).join('\n')),
     csvEscape(r.submitterName),
     csvEscape(r.submitterDept),
     r.submitDate || '',
