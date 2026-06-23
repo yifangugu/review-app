@@ -485,6 +485,16 @@ app.patch('/api/records/:id/status', async (req, res) => {
   }
 });
 
+// ========== 健康检查 ==========
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    storage: useMemoryStore ? 'memory (数据会丢失!)' : 'mongodb (数据持久化)',
+    mongodbConfigured: !!process.env.MONGODB_URI,
+    uptime: process.uptime()
+  });
+});
+
 // ========== 启动服务器 ==========
 connectDB().then(() => {
   app.listen(PORT, () => {
