@@ -18,7 +18,7 @@ let useMemoryStore = false;
 
 // ========== 内存存储 ==========
 let memoryRecords = [];
-let memoryUsers = []; // { username, passwordHash, department, createdAt }
+let memoryUsers = []; // { username, passwordHash, department, role, createdAt }
 let memorySessions = {}; // token -> username
 
 // ========== 工具函数 ==========
@@ -55,6 +55,7 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
   department: { type: String, default: '' },
+  role: { type: String, default: 'user', enum: ['user', 'admin'] },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -137,16 +138,18 @@ app.post('/api/auth/register', async (req, res) => {
 
     const name = username.trim();
     const passwordHash = hashPassword(password);
+    // 谷一凡自动设为管理员
+    const role = (name === '谷一凡') ? 'admin' : 'user';
 
     if (useMemoryStore) {
       const existing = memoryUsers.find(u => u.username === name);
       if (existing) {
         return res.status(400).json({ success: false, message: '该姓名已注册，请直接登录' });
       }
-      memoryUsers.push({ username: name, passwordHash, department: department || '', createdAt: new Date() });
+      memoryUsers.push({ username: name, passwordHash, department: department || '', role, createdAt: new Date() });
       const token = generateToken();
       memorySessions[token] = name;
-      return res.json({ success: true, data: { token, username: name, department: department || '' } });
+      return res.json({ success: true, data: { token, username: name, department: department || '', role } });
     }
 
     const existing = await User.findOne({ username: name });
@@ -154,11 +157,11 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ success: false, message: '该姓名已注册，请直接登录' });
     }
 
-    await new User({ username: name, passwordHash, department: department || '' }).save();
+    await new User({ username: name, passwordHash, department: department || '', role }).save();
     const token = generateToken();
     await new Session({ token, username: name }).save();
 
-    res.json({ success: true, data: { token, username: name, department: department || '' } });
+    res.json({ success: true, data: { token, username: name, department: department || '', role } });
   } catch (err) {
     res.status(500).json({ success: false, message: '注册失败: ' + err.message });
   }
@@ -183,7 +186,7 @@ app.post('/api/auth/login', async (req, res) => {
       }
       const token = generateToken();
       memorySessions[token] = name;
-      return res.json({ success: true, data: { token, username: name, department: user.department } });
+      return res.json({ success: true, data: { token, username: name, department: user.department, role: user.role || 'user' } });
     }
 
     const user = await User.findOne({ username: name, passwordHash });
@@ -194,7 +197,7 @@ app.post('/api/auth/login', async (req, res) => {
     const token = generateToken();
     await new Session({ token, username: name }).save();
 
-    res.json({ success: true, data: { token, username: name, department: user.department } });
+    res.json({ success: true, data: { token, username: name, department: user.department, role: user.role || 'user' } });
   } catch (err) {
     res.status(500).json({ success: false, message: '登录失败' });
   }
@@ -210,13 +213,13 @@ app.get('/api/auth/verify', async (req, res) => {
       const username = memorySessions[token];
       if (!username) return res.json({ success: false, message: '登录已过期' });
       const user = memoryUsers.find(u => u.username === username);
-      return res.json({ success: true, data: { username, department: user?.department || '' } });
+      return res.json({ success: true, data: { username, department: user?.department || '', role: user?.role || 'user' } });
     }
 
     const session = await Session.findOne({ token });
     if (!session) return res.json({ success: false, message: '登录已过期' });
     const user = await User.findOne({ username: session.username });
-    res.json({ success: true, data: { username: session.username, department: user?.department || '' } });
+    res.json({ success: true, data: { username: session.username, department: user?.department || '', role: user?.role || 'user' } });
   } catch (err) {
     res.json({ success: false, message: '验证失败' });
   }
@@ -243,7 +246,7 @@ app.post('/api/auth/logout', async (req, res) => {
 app.get('/api/users', async (req, res) => {
   try {
     if (useMemoryStore) {
-      const users = memoryUsers.map(u => ({ username: u.username, department: u.department, createdAt: u.createdAt }));
+      const users = memoryUsers.map(u => ({ username: u.username, department: u.department, role: u.role || 'user', createdAt: u.createdAt }));
       return res.json({ success: true, data: users });
     }
     const users = await User.find().select('-passwordHash').sort({ createdAt: -1 });
@@ -317,6 +320,33 @@ app.put('/api/users/:username/password', async (req, res) => {
     res.json({ success: true, message: '密码重置成功' });
   } catch (err) {
     res.status(500).json({ success: false, message: '重置密码失败' });
+  }
+});
+
+// 修改用户角色（管理员用）
+app.put('/api/users/:username/role', async (req, res) => {
+  try {
+    const username = req.params.username;
+    const { role } = req.body;
+
+    if (!['user', 'admin'].includes(role)) {
+      return res.status(400).json({ success: false, message: '无效角色' });
+    }
+
+    if (useMemoryStore) {
+      const user = memoryUsers.find(u => u.username === username);
+      if (!user) return res.status(404).json({ success: false, message: '用户不存在' });
+      user.role = role;
+      return res.json({ success: true, message: '角色更新成功' });
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ success: false, message: '用户不存在' });
+    user.role = role;
+    await user.save();
+    res.json({ success: true, message: '角色更新成功' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: '角色更新失败' });
   }
 });
 

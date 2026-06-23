@@ -751,15 +751,16 @@
 </head>
 <body>
 
-<!-- ===== 管理员密码验证 ===== -->
+<!-- ===== 管理员登录验证 ===== -->
 <div id="adminAuthOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#1a3a5c 0%,#2c5f8a 100%);z-index:99999;display:flex;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:16px;padding:40px 36px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;">
+  <div style="background:#fff;border-radius:16px;padding:40px 36px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;">
     <div style="width:60px;height:60px;background:linear-gradient(135deg,#1a3a5c,#2c5f8a);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px;color:#c9a96e;font-weight:700;">管</div>
     <h2 style="font-size:20px;font-weight:700;color:#1a3a5c;margin-bottom:6px;">管理后台</h2>
-    <p style="font-size:13px;color:#7f8c8d;margin-bottom:24px;">请输入管理员密码</p>
-    <input type="password" id="adminPwdInput" placeholder="管理员密码" style="width:100%;padding:12px 16px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;transition:border 0.2s;margin-bottom:8px;" onfocus="this.style.borderColor='#2c5f8a'" onblur="this.style.borderColor='#e2e8f0'" onkeydown="if(event.key==='Enter')verifyAdmin()">
-    <div id="adminPwdError" style="font-size:12px;color:#e74c3c;min-height:18px;margin-bottom:12px;"></div>
-    <button onclick="verifyAdmin()" style="width:100%;padding:12px;background:linear-gradient(135deg,#1a3a5c,#2c5f8a);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.2s;">进入后台</button>
+    <p style="font-size:13px;color:#7f8c8d;margin-bottom:24px;">请使用管理员账号登录</p>
+    <input type="text" id="adminUserInput" placeholder="姓名" style="width:100%;padding:12px 16px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;transition:border 0.2s;margin-bottom:10px;" onfocus="this.style.borderColor='#2c5f8a'" onblur="this.style.borderColor='#e2e8f0'" onkeydown="if(event.key==='Enter')document.getElementById('adminPwdInput').focus()">
+    <input type="password" id="adminPwdInput" placeholder="密码" style="width:100%;padding:12px 16px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;transition:border 0.2s;margin-bottom:8px;" onfocus="this.style.borderColor='#2c5f8a'" onblur="this.style.borderColor='#e2e8f0'" onkeydown="if(event.key==='Enter')adminLogin()">
+    <div id="adminLoginError" style="font-size:12px;color:#e74c3c;min-height:18px;margin-bottom:12px;"></div>
+    <button onclick="adminLogin()" style="width:100%;padding:12px;background:linear-gradient(135deg,#1a3a5c,#2c5f8a);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.2s;">登 录</button>
   </div>
 </div>
 
@@ -773,7 +774,8 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="header-tag" id="meetingInfo">下期复盘会：待定</div>
+    <span id="adminUserTag" style="font-size:13px;color:var(--accent);margin-right:12px;"></span>
+    <button onclick="adminLogout()" style="padding:6px 14px;background:transparent;border:1px solid var(--accent);color:var(--accent);border-radius:6px;font-size:12px;cursor:pointer;">退出登录</button>
   </div>
 </div>
 
@@ -951,27 +953,87 @@
 
 
 <script>
-// ========== 管理员密码验证 ==========
-const ADMIN_PASSWORD = 'gtjaqh';
+// ========== 管理员登录系统 ==========
+let adminToken = localStorage.getItem('admin_auth_token') || '';
+let adminUser = localStorage.getItem('admin_auth_user') || '';
 
-function verifyAdmin() {
-  const pwd = document.getElementById('adminPwdInput').value;
-  if (pwd === ADMIN_PASSWORD) {
-    document.getElementById('adminAuthOverlay').style.display = 'none';
-    sessionStorage.setItem('admin_auth', '1');
-    initApp();
-  } else {
-    document.getElementById('adminPwdError').textContent = '密码错误，请重试';
-    document.getElementById('adminPwdInput').value = '';
-    document.getElementById('adminPwdInput').focus();
+async function adminLogin() {
+  const username = document.getElementById('adminUserInput').value.trim();
+  const password = document.getElementById('adminPwdInput').value;
+
+  if (!username || !password) {
+    document.getElementById('adminLoginError').textContent = '请输入姓名和密码';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      if (data.data.role !== 'admin') {
+        document.getElementById('adminLoginError').textContent = '该账号无管理员权限';
+        return;
+      }
+      adminToken = data.data.token;
+      adminUser = data.data.username;
+      localStorage.setItem('admin_auth_token', adminToken);
+      localStorage.setItem('admin_auth_user', adminUser);
+      document.getElementById('adminAuthOverlay').style.display = 'none';
+      document.getElementById('adminUserTag').textContent = '👤 ' + adminUser;
+      initApp();
+    } else {
+      document.getElementById('adminLoginError').textContent = data.message || '登录失败';
+      document.getElementById('adminPwdInput').value = '';
+    }
+  } catch (err) {
+    document.getElementById('adminLoginError').textContent = '网络错误，请重试';
   }
 }
 
-// 检查是否已验证（同标签页内有效）
-if (sessionStorage.getItem('admin_auth') === '1') {
-  document.getElementById('adminAuthOverlay').style.display = 'none';
-  initApp();
+function adminLogout() {
+  adminToken = '';
+  adminUser = '';
+  localStorage.removeItem('admin_auth_token');
+  localStorage.removeItem('admin_auth_user');
+  location.reload();
 }
+
+// 检查是否已登录（验证 token 有效性）
+async function checkAdminAuth() {
+  if (!adminToken) return false;
+  try {
+    const res = await fetch('/api/auth/verify', {
+      headers: { 'Authorization': 'Bearer ' + adminToken }
+    });
+    const data = await res.json();
+    if (data.success && data.data.role === 'admin') {
+      return true;
+    }
+    // token 无效或非管理员
+    localStorage.removeItem('admin_auth_token');
+    localStorage.removeItem('admin_auth_user');
+    adminToken = '';
+    adminUser = '';
+    return false;
+  } catch (err) {
+    return false;
+  }
+}
+
+// 页面加载时检查
+(async function() {
+  const isValid = await checkAdminAuth();
+  if (isValid) {
+    document.getElementById('adminAuthOverlay').style.display = 'none';
+    document.getElementById('adminUserTag').textContent = '👤 ' + adminUser;
+    initApp();
+  }
+})();
 
 // ========== Config ==========
 const API_BASE = '/api/records';
@@ -1726,14 +1788,15 @@ async function loadUsers() {
       container.innerHTML = `
         <div style="display:grid;gap:10px;">
           ${users.map((u, i) => `
-            <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:8px;">
-              <div style="width:38px;height:38px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--primary);flex-shrink:0;">${u.username.charAt(0)}</div>
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:8px;${u.role === 'admin' ? 'border-left:3px solid var(--accent);' : ''}">
+              <div style="width:38px;height:38px;background:${u.role === 'admin' ? 'linear-gradient(135deg,#1a3a5c,#2c5f8a)' : 'var(--accent)'};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:${u.role === 'admin' ? '#c9a96e' : 'var(--primary)'};flex-shrink:0;">${u.username.charAt(0)}</div>
               <div style="flex:1;min-width:0;">
-                <div style="font-size:14px;font-weight:600;color:var(--text);">${escapeHtml(u.username)}</div>
+                <div style="font-size:14px;font-weight:600;color:var(--text);">${escapeHtml(u.username)}${u.role === 'admin' ? ' <span style="font-size:11px;background:linear-gradient(135deg,#1a3a5c,#2c5f8a);color:#c9a96e;padding:2px 8px;border-radius:4px;font-weight:500;">管理员</span>' : ''}</div>
                 <div style="font-size:12px;color:var(--text-light);">${u.department ? escapeHtml(u.department) : '未填写部门'}</div>
               </div>
               <button class="action-btn" onclick="openEditUserDeptModal('${escapeHtml(u.username)}','${u.department ? escapeHtml(u.department) : ''}')" style="flex-shrink:0;">修改部门</button>
               <button class="action-btn" onclick="openResetPasswordModal('${escapeHtml(u.username)}')" style="flex-shrink:0;background:var(--warning);color:#fff;">重置密码</button>
+              ${u.role !== 'admin' ? `<button class="action-btn" onclick="setUserRole('${escapeHtml(u.username)}','admin')" style="flex-shrink:0;background:var(--primary);color:#fff;">设为管理员</button>` : `<button class="action-btn" onclick="setUserRole('${escapeHtml(u.username)}','user')" style="flex-shrink:0;background:var(--text-light);color:#fff;">取消管理员</button>`}
               <div style="font-size:12px;color:var(--text-light);flex-shrink:0;">
                 注册于 ${u.createdAt ? new Date(u.createdAt).toLocaleDateString('zh-CN') : '-'}
               </div>
@@ -1741,7 +1804,7 @@ async function loadUsers() {
           `).join('')}
         </div>
         <div style="margin-top:16px;padding:12px 16px;background:var(--info-light);border-radius:8px;font-size:13px;color:var(--primary);">
-          💡 共 <strong>${users.length}</strong> 位客户经理已注册。修改部门后将同步更新该用户所有提报记录的部门信息。
+          💡 共 <strong>${users.length}</strong> 位用户已注册（其中 <strong>${users.filter(u=>u.role==='admin').length}</strong> 位管理员）。修改部门后将同步更新该用户所有提报记录的部门信息。
         </div>
       `;
     } else {
@@ -1896,6 +1959,29 @@ async function savePassword() {
   } finally {
     saveBtn.disabled = false;
     saveBtn.textContent = '确认重置';
+  }
+}
+
+// ========== 用户角色管理 ==========
+async function setUserRole(username, role) {
+  const actionText = role === 'admin' ? '设为管理员' : '取消管理员';
+  if (!confirm(`确认将 ${username} ${actionText}？`)) return;
+
+  try {
+    const res = await fetch(`/api/users/${encodeURIComponent(username)}/role`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`已将 ${username} ${actionText}`, 'success');
+      loadUsers();
+    } else {
+      showToast('操作失败：' + (data.message || '未知错误'), 'error');
+    }
+  } catch (err) {
+    showToast('网络错误，操作失败', 'error');
   }
 }
 </script>
