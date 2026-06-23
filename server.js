@@ -289,6 +289,35 @@ app.put('/api/users/:username/department', async (req, res) => {
   }
 });
 
+// 重置用户密码（管理页面用）
+app.put('/api/users/:username/password', async (req, res) => {
+  try {
+    const username = req.params.username;
+    const { password } = req.body;
+
+    if (!password || password.length < 4) {
+      return res.status(400).json({ success: false, message: '密码至少4位' });
+    }
+
+    const passwordHash = hashPassword(password);
+
+    if (useMemoryStore) {
+      const user = memoryUsers.find(u => u.username === username);
+      if (!user) return res.status(404).json({ success: false, message: '用户不存在' });
+      user.passwordHash = passwordHash;
+      return res.json({ success: true, message: '密码重置成功' });
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ success: false, message: '用户不存在' });
+    user.passwordHash = passwordHash;
+    await user.save();
+    res.json({ success: true, message: '密码重置成功' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: '重置密码失败' });
+  }
+});
+
 // ========== 业务 API（部分需要认证）==========
 
 // 新增记录（需要登录）

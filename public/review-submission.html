@@ -806,6 +806,21 @@
           <input type="password" id="loginPassword" placeholder="请输入密码">
         </div>
         <button class="login-btn" onclick="handleLogin()">登 录</button>
+        <div style="text-align:center;margin-top:12px;">
+          <a href="javascript:void(0)" onclick="showForgotPassword()" style="color:var(--primary);font-size:13px;text-decoration:none;">忘记密码？</a>
+        </div>
+      </div>
+
+      <!-- Forgot Password -->
+      <div id="forgotFormArea" style="display:none">
+        <div style="text-align:center;padding:10px 0 16px;">
+          <div style="font-size:36px;margin-bottom:8px;">🔑</div>
+          <div style="font-size:14px;color:var(--text);font-weight:600;">忘记密码</div>
+        </div>
+        <div style="padding:12px 16px;background:var(--info-light);border-radius:8px;font-size:13px;color:var(--primary);margin-bottom:16px;line-height:1.6;">
+          请联系项目经理（管理员）为您重置密码，重置后可使用新密码登录。
+        </div>
+        <button class="login-btn" onclick="switchLoginMode('login')" style="background:var(--text-light);">返回登录</button>
       </div>
 
       <!-- Register Form -->
@@ -1061,10 +1076,16 @@ async function verifyToken() {
 
 function switchLoginMode(mode) {
   document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector(`.login-tab[data-mode="${mode}"]`).classList.add('active');
+  const tab = document.querySelector(`.login-tab[data-mode="${mode}"]`);
+  if (tab) tab.classList.add('active');
   document.getElementById('loginFormArea').style.display = mode === 'login' ? 'block' : 'none';
   document.getElementById('registerFormArea').style.display = mode === 'register' ? 'block' : 'none';
+  document.getElementById('forgotFormArea').style.display = mode === 'forgot' ? 'block' : 'none';
   document.getElementById('loginError').classList.remove('show');
+}
+
+function showForgotPassword() {
+  switchLoginMode('forgot');
 }
 
 function showLoginError(msg) {

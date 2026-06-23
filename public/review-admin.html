@@ -901,6 +901,18 @@
   </div>
 </div>
 
+<!-- ===== Reset Password Modal ===== -->
+<div class="modal-overlay" id="resetPasswordModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-title">重置用户密码</div>
+    <div id="resetPasswordContent"></div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn btn-outline" onclick="closeResetPasswordModal()">取消</button>
+      <button class="btn btn-primary" id="savePasswordBtn" onclick="savePassword()" style="background:var(--warning);">确认重置</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Edit Modal ===== -->
 <div class="modal-overlay" id="editModal">
   <div class="modal detail-modal">
@@ -1687,6 +1699,7 @@ async function loadUsers() {
                 <div style="font-size:12px;color:var(--text-light);">${u.department ? escapeHtml(u.department) : '未填写部门'}</div>
               </div>
               <button class="action-btn" onclick="openEditUserDeptModal('${escapeHtml(u.username)}','${u.department ? escapeHtml(u.department) : ''}')" style="flex-shrink:0;">修改部门</button>
+              <button class="action-btn" onclick="openResetPasswordModal('${escapeHtml(u.username)}')" style="flex-shrink:0;background:var(--warning);color:#fff;">重置密码</button>
               <div style="font-size:12px;color:var(--text-light);flex-shrink:0;">
                 注册于 ${u.createdAt ? new Date(u.createdAt).toLocaleDateString('zh-CN') : '-'}
               </div>
@@ -1777,6 +1790,78 @@ async function saveUserDept() {
   } finally {
     saveBtn.disabled = false;
     saveBtn.textContent = '保存';
+  }
+}
+
+// ========== Reset Password ==========
+let resetPasswordUsername = null;
+
+function openResetPasswordModal(username) {
+  resetPasswordUsername = username;
+  document.getElementById('resetPasswordContent').innerHTML = `
+    <div class="edit-form">
+      <div class="edit-field">
+        <label>用户姓名</label>
+        <input type="text" value="${escapeHtml(username)}" disabled style="background:#f0f2f5;color:var(--text-light);" />
+      </div>
+      <div class="edit-field">
+        <label>新密码</label>
+        <input type="password" id="resetPasswordInput" placeholder="请输入新密码（至少4位）" />
+      </div>
+      <div class="edit-field">
+        <label>确认新密码</label>
+        <input type="password" id="resetPasswordInput2" placeholder="再次输入新密码" />
+      </div>
+      <div style="font-size:12px;color:var(--warning);padding:4px 0;">
+        ⚠️ 重置后该用户需使用新密码登录
+      </div>
+    </div>
+  `;
+  document.getElementById('resetPasswordModal').classList.add('active');
+}
+
+function closeResetPasswordModal() {
+  resetPasswordUsername = null;
+  document.getElementById('resetPasswordModal').classList.remove('active');
+}
+
+async function savePassword() {
+  if (!resetPasswordUsername) return;
+
+  const password = document.getElementById('resetPasswordInput').value;
+  const password2 = document.getElementById('resetPasswordInput2').value;
+
+  if (!password || password.length < 4) {
+    showToast('密码至少4位', 'error');
+    return;
+  }
+  if (password !== password2) {
+    showToast('两次输入的密码不一致', 'error');
+    return;
+  }
+
+  const saveBtn = document.getElementById('savePasswordBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = '重置中...';
+
+  try {
+    const res = await fetch(`/api/users/${encodeURIComponent(resetPasswordUsername)}/password`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeResetPasswordModal();
+      showToast(`已重置 ${resetPasswordUsername} 的密码`, 'success');
+    } else {
+      showToast('重置失败：' + (data.message || '未知错误'), 'error');
+    }
+  } catch (err) {
+    showToast('网络错误，重置失败', 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '确认重置';
   }
 }
 </script>
