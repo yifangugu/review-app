@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产品复盘议题提报系统</title>
+<style>
+  :root {
+    --primary: #1a3a5c;
+    --primary-light: #2c5f8a;
+    --accent: #c9a96e;
+    --accent-light: #e0c992;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #7f8c8d;
+    --border: #e2e8f0;
+    --danger: #e74c3c;
+    --danger-light: #fdecea;
+    --warning: #f39c12;
+    --warning-light: #fef5e7;
+    --success: #27ae60;
+    --success-light: #eafaf1;
+    --info: #2980b9;
+    --info-light: #ebf5fb;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --shadow-hover: 0 6px 24px rgba(0,0,0,0.1);
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(26,58,92,0.2);
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .header-logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px; color: var(--primary);
+  }
+  .header-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .header-subtitle {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 1px;
+  }
+  .header-right {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .header-badge {
+    background: rgba(255,255,255,0.15);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    backdrop-filter: blur(4px);
+  }
+  .header-user {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.1);
+    padding: 6px 14px 6px 8px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+  .avatar {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: var(--primary);
+  }
+
+  /* Main Layout */
+  .main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+
+  /* Content Area */
+  .content-area {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    min-height: 400px;
+  }
+
+  /* Form */
+  .form-section {
+    margin-bottom: 24px;
+  }
+  .form-section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-section-title .icon {
+    width: 22px; height: 22px;
+    background: var(--primary);
+    color: white;
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .form-label .required {
+    color: var(--danger);
+    margin-left: 2px;
+  }
+  .form-input, .form-select, .form-textarea {
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text);
+    background: #fafbfc;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(44,95,138,0.1);
+    background: white;
+  }
+  .form-textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  .form-hint {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+
+  /* Urgency Selector */
+  .urgency-selector {
+    display: flex;
+    gap: 10px;
+  }
+  .urgency-option {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    background: #fafbfc;
+  }
+  .urgency-option:hover { border-color: var(--text-light); }
+  .urgency-option.selected.low {
+    border-color: var(--success);
+    background: var(--success-light);
+    color: var(--success);
+  }
+  .urgency-option.selected.medium {
+    border-color: var(--warning);
+    background: var(--warning-light);
+    color: var(--warning);
+  }
+  .urgency-option.selected.high {
+    border-color: var(--danger);
+    background: var(--danger-light);
+    color: var(--danger);
+  }
+
+  /* Category Tags */
+  .category-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .category-tag {
+    padding: 7px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafbfc;
+    user-select: none;
+  }
+  .category-tag:hover { border-color: var(--primary-light); }
+  .category-tag.selected {
+    border-color: var(--primary);
+    background: var(--info-light);
+    color: var(--primary);
+    font-weight: 500;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(26,58,92,0.25);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 4px 16px rgba(26,58,92,0.35);
+    transform: translateY(-1px);
+  }
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-secondary {
+    background: white;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--text-light); }
+  .btn-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Toast */
+  .toast-container {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+    min-width: 260px;
+  }
+  .toast-success {
+    background: var(--success);
+    color: white;
+  }
+  .toast-error {
+    background: var(--danger);
+    color: white;
+  }
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .header { padding: 0 16px; }
+    .main { padding: 16px 12px 40px; }
+    .urgency-selector { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">复</div>
+    <div>
+      <div class="header-title">产品复盘议题提报</div>
+      <div class="header-subtitle">资管产品运作复盘会 · 议题收集</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-badge" id="meetingInfo">下期复盘会：待定</div>
+    <div class="header-user">
+      <div class="avatar" id="userAvatar">客</div>
+      <span id="currentUser">客户经理</span>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="content-area">
+    <form id="submitForm" novalidate>
+
+      <div class="form-section">
+        <div class="form-section-title">
+          <span class="icon">1</span>
+          产品信息
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">产品名称<span class="required">*</span></label>
+            <input class="form-input" id="productName" placeholder="如：XX稳健增值1号集合资管计划" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">投资经理<span class="required">*</span></label>
+            <select class="form-select" id="investManager" required>
+              <option value="">请选择</option>
+              <option value="王涛">王涛</option>
+              <option value="邵骏腾">邵骏腾</option>
+              <option value="上官佳依">上官佳依</option>
+              <option value="宋哲君">宋哲君</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">
+          <span class="icon">2</span>
+          议题分类与紧急度
+        </div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">议题分类<span class="required">*</span></label>
+            <div class="category-tags" id="categoryTags">
+              <div class="category-tag" data-value="业绩不达预期">业绩不达预期</div>
+              <div class="category-tag" data-value="投资策略疑问">投资策略疑问</div>
+              <div class="category-tag" data-value="交易运营投诉">交易运营投诉</div>
+              <div class="category-tag" data-value="其他">其他</div>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">紧急程度<span class="required">*</span></label>
+            <div class="urgency-selector" id="urgencySelector">
+              <div class="urgency-option low" data-value="low">
+                🟢 一般<br><small>可在复盘会中做常规运作讨论</small>
+              </div>
+              <div class="urgency-option medium" data-value="medium">
+                🟡 较急<br><small>客户不满，但仍愿意观察一段时间</small>
+              </div>
+              <div class="urgency-option high" data-value="high">
+                🔴 紧急<br><small>客户反馈较强烈，需要尽快响应</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">
+          <span class="icon">3</span>
+          议题详情
+        </div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">提报原因<span class="required">*</span></label>
+            <textarea class="form-textarea" id="reason" placeholder="请描述为什么该产品需要在复盘中讨论，包括但不限于：&#10;- 客户具体反馈了什么？&#10;- 业绩与预期偏差有多大？&#10;- 是否已与投资经理沟通过，对方态度如何？&#10;- 如不处理可能产生什么后果？" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">是否已与投资经理沟通</label>
+            <select class="form-select" id="communicated">
+              <option value="">请选择</option>
+              <option value="是，投资已沟通，但仍不能满足客户需求">是，投资已沟通，但仍不能满足客户需求</option>
+              <option value="否，客户拒绝单独沟通">否，客户拒绝单独沟通</option>
+              <option value="否，需要协调最近可用的投资经理时间">否，需要协调最近可用的投资经理时间</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">补充说明</label>
+            <textarea class="form-textarea" id="additionalNote" placeholder="其他需要补充的信息" style="min-height:60px"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">
+          <span class="icon">4</span>
+          提报人信息
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">客户经理姓名<span class="required">*</span></label>
+            <input class="form-input" id="submitterName" placeholder="您的姓名" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">所属部门</label>
+            <input class="form-input" id="submitterDept" placeholder="如：财富管理部">
+          </div>
+          <div class="form-group">
+            <label class="form-label">提报日期</label>
+            <input class="form-input" id="submitDate" type="date" readonly>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-actions">
+        <button type="button" class="btn btn-secondary" onclick="resetForm()">清空表单</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">提交议题</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ========== API 配置 ==========
+const API_BASE = '/api/records';
+
+// ========== Category Tags ==========
+document.querySelectorAll('.category-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    tag.classList.toggle('selected');
+  });
+});
+
+// ========== Urgency Selector ==========
+document.querySelectorAll('.urgency-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.urgency-option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+  });
+});
+
+// ========== Set Today's Date ==========
+document.getElementById('submitDate').value = new Date().toISOString().split('T')[0];
+
+// ========== Form Submit ==========
+document.getElementById('submitForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const productName = document.getElementById('productName').value.trim();
+  const investManager = document.getElementById('investManager').value;
+  const selectedCategories = [...document.querySelectorAll('.category-tag.selected')].map(t => t.dataset.value);
+  const selectedUrgency = document.querySelector('.urgency-option.selected');
+  const reason = document.getElementById('reason').value.trim();
+  const submitterName = document.getElementById('submitterName').value.trim();
+
+  // Validation
+  if (!productName) { showToast('请填写产品名称', 'error'); return; }
+  if (!investManager) { showToast('请选择投资经理', 'error'); return; }
+  if (selectedCategories.length === 0) { showToast('请选择至少一个议题分类', 'error'); return; }
+  if (!selectedUrgency) { showToast('请选择紧急程度', 'error'); return; }
+  if (!reason) { showToast('请填写提报原因', 'error'); return; }
+  if (!submitterName) { showToast('请填写客户经理姓名', 'error'); return; }
+
+  const record = {
+    productName,
+    investManager,
+    categories: selectedCategories,
+    urgency: selectedUrgency.dataset.value,
+    reason,
+    communicated: document.getElementById('communicated').value,
+    additionalNote: document.getElementById('additionalNote').value.trim(),
+    submitterName,
+    submitterDept: document.getElementById('submitterDept').value.trim(),
+    submitDate: document.getElementById('submitDate').value,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+
+  // 禁用提交按钮，防止重复提交
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '提交中...';
+
+  try {
+    const res = await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('议题提报成功！已加入复盘议题池', 'success');
+      resetForm();
+    } else {
+      showToast('提交失败：' + (data.message || '未知错误'), 'error');
+    }
+  } catch (err) {
+    showToast('网络错误，请检查连接后重试', 'error');
+    console.error('提交失败:', err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '提交议题';
+  }
+});
+
+// ========== Reset Form ==========
+function resetForm() {
+  document.getElementById('submitForm').reset();
+  document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('selected'));
+  document.querySelectorAll('.urgency-option').forEach(o => o.classList.remove('selected'));
+  document.getElementById('submitDate').value = new Date().toISOString().split('T')[0];
+}
+
+// ========== Toast ==========
+function showToast(msg, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>

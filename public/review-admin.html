@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产品复盘议题 · 管理后台</title>
+<style>
+  :root {
+    --primary: #1a3a5c;
+    --primary-light: #2c5f8a;
+    --accent: #c9a96e;
+    --accent-light: #e0c992;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #7f8c8d;
+    --border: #e2e8f0;
+    --danger: #e74c3c;
+    --danger-light: #fdecea;
+    --warning: #f39c12;
+    --warning-light: #fef5e7;
+    --success: #27ae60;
+    --success-light: #eafaf1;
+    --info: #2980b9;
+    --info-light: #ebf5fb;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --shadow-hover: 0 6px 24px rgba(0,0,0,0.1);
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(26,58,92,0.2);
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .header-logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px; color: var(--primary);
+  }
+  .header-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .header-subtitle {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 1px;
+  }
+  .header-right {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .header-tag {
+    background: rgba(255,255,255,0.15);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ===== Main ===== */
+  .main {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+
+  /* ===== Stats Bar ===== */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid transparent;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: default;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+  .stat-card.pending { border-left-color: var(--warning); }
+  .stat-card.completed { border-left-color: var(--success); }
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .stat-card.pending .stat-value { color: var(--warning); }
+  .stat-card.completed .stat-value { color: var(--success); }
+
+  /* ===== Tab Navigation ===== */
+  .tab-nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+  }
+  .tab-btn {
+    padding: 12px 28px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-light);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .tab-btn:hover { color: var(--primary); }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ===== Toolbar ===== */
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .search-box {
+    position: relative;
+    width: 280px;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 9px 14px 9px 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    transition: all 0.2s;
+  }
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(44,95,138,0.1);
+  }
+  .search-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--text-light); font-size: 14px;
+  }
+  .filter-btn {
+    padding: 7px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--info-light);
+  }
+  .filter-btn.active { font-weight: 600; }
+  .filter-group {
+    display: flex; gap: 6px;
+  }
+
+  /* ===== Action Buttons ===== */
+  .btn {
+    padding: 9px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(26,58,92,0.25);
+  }
+  .btn-primary:hover { box-shadow: 0 4px 16px rgba(26,58,92,0.35); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-outline {
+    background: white;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-danger {
+    background: white;
+    color: var(--danger);
+    border: 1.5px solid var(--danger);
+  }
+  .btn-danger:hover { background: var(--danger-light); }
+
+  /* ===== Record List ===== */
+  .record-list-container {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .record-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .record-card {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    transition: background 0.15s;
+  }
+  .record-card:last-child { border-bottom: none; }
+  .record-card:hover { background: #fafbfd; }
+  .record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .record-title-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+  .record-product-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .record-badges {
+    display: flex; gap: 6px; align-items: center; flex-shrink: 0;
+  }
+  .badge {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-pending { background: var(--warning-light); color: var(--warning); }
+  .badge-scheduled { background: var(--info-light); color: var(--info); }
+  .badge-completed { background: var(--success-light); color: var(--success); }
+  .badge-low { background: var(--success-light); color: var(--success); }
+  .badge-medium { background: var(--warning-light); color: var(--warning); }
+  .badge-high { background: var(--danger-light); color: var(--danger); }
+
+  .record-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px 24px;
+    font-size: 13px;
+  }
+  .record-field {
+    display: flex;
+    gap: 6px;
+  }
+  .record-field-label {
+    color: var(--text-light);
+    white-space: nowrap;
+  }
+  .record-field-value {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .record-reason {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .record-reason-label {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .record-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .record-meta {
+    font-size: 12px;
+    color: var(--text-light);
+    display: flex; gap: 16px;
+  }
+  .record-actions {
+    display: flex; gap: 8px;
+  }
+  .action-btn {
+    padding: 5px 14px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .action-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .action-btn.delete { color: var(--text-light); }
+  .action-btn.delete:hover { border-color: var(--danger); color: var(--danger); }
+  .action-btn.complete { color: var(--success); }
+  .action-btn.complete:hover { border-color: var(--success); background: var(--success-light); }
+  .action-btn.reopen { color: var(--warning); }
+  .action-btn.reopen:hover { border-color: var(--warning); background: var(--warning-light); }
+
+  /* ===== Empty State ===== */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-light);
+  }
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+  .empty-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .empty-desc {
+    font-size: 13px;
+  }
+
+  /* ===== Loading ===== */
+  .loading-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light);
+  }
+  .loading-spinner {
+    display: inline-block;
+    width: 28px; height: 28px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 10px;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ===== Toast ===== */
+  .toast-container {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+    min-width: 260px;
+  }
+  .toast-success { background: var(--success); color: white; }
+  .toast-error { background: var(--danger); color: white; }
+  .toast-info { background: var(--info); color: white; }
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  /* ===== Modal ===== */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 12px;
+    padding: 28px;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  }
+  .modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .modal-body {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .modal-actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+
+  /* ===== Detail Modal ===== */
+  .detail-modal {
+    max-width: 620px;
+  }
+  /* ===== Edit Form ===== */
+  .edit-form { display: flex; flex-direction: column; gap: 16px; }
+  .edit-field { display: flex; flex-direction: column; gap: 6px; }
+  .edit-field label {
+    font-size: 12px; color: var(--text-light); font-weight: 500;
+  }
+  .edit-field input, .edit-field select, .edit-field textarea {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 14px; font-family: inherit; color: var(--text);
+    background: #fff; outline: none; transition: border-color 0.2s;
+  }
+  .edit-field input:focus, .edit-field select:focus, .edit-field textarea:focus {
+    border-color: var(--primary);
+  }
+  .edit-field textarea { resize: vertical; min-height: 80px; }
+  .edit-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .edit-tag {
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
+    border: 1px solid var(--border); color: var(--text-light); background: #fff;
+    transition: all 0.2s; user-select: none;
+  }
+  .edit-tag.selected { border-color: var(--primary); color: var(--primary); background: var(--info-light); }
+  .edit-urgency { display: flex; gap: 8px; }
+  .edit-urgency-btn {
+    flex: 1; padding: 8px; border-radius: 6px; font-size: 12px; text-align: center;
+    cursor: pointer; border: 1px solid var(--border); background: #fff;
+    color: var(--text-light); transition: all 0.2s;
+  }
+  .edit-urgency-btn.selected.low { border-color: #27ae60; color: #27ae60; background: var(--success-light); }
+  .edit-urgency-btn.selected.medium { border-color: #f39c12; color: #f39c12; background: var(--warning-light); }
+  .edit-urgency-btn.selected.high { border-color: #e74c3c; color: #e74c3c; background: var(--danger-light); }
+
+  /* ===== Analytics Section ===== */
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .analytics-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .analytics-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .analytics-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .analytics-card-title .icon {
+    font-size: 16px;
+  }
+  .analytics-card-body {
+    padding: 20px;
+  }
+
+  /* Bar Chart */
+  .bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .bar-label {
+    min-width: 80px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .bar-track {
+    flex: 1;
+    height: 32px;
+    background: var(--bg);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    transition: width 0.6s ease;
+    min-width: 36px;
+  }
+  .bar-fill.stacked {
+    display: flex;
+    padding: 0;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .bar-segment {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    transition: width 0.6s ease;
+    min-width: 0;
+  }
+  .bar-segment:first-child { border-radius: 6px 0 0 6px; }
+  .bar-segment:last-child { border-radius: 0 6px 6px 0; }
+  .bar-segment:only-child { border-radius: 6px; }
+  .bar-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 24px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* Color sets */
+  .color-pending { background: var(--warning); }
+  .color-scheduled { background: var(--info); }
+  .color-completed { background: var(--success); }
+  .color-low { background: #81c784; }
+  .color-medium { background: var(--warning); }
+  .color-high { background: var(--danger); }
+  .color-primary { background: var(--primary); }
+  .color-1 { background: var(--primary); }
+  .color-2 { background: var(--info); }
+  .color-3 { background: var(--accent); }
+  .color-4 { background: var(--success); }
+  .color-5 { background: #8e44ad; }
+
+  /* Rank badge */
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .rank-1 { background: #FFD700; color: #7B6B00; }
+  .rank-2 { background: #C0C0C0; color: #555; }
+  .rank-3 { background: #CD7F32; color: #fff; }
+  .rank-other { background: var(--bg); color: var(--text-light); }
+
+  /* Summary cards in analytics */
+  .summary-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .summary-mini-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px 56px;
+    text-align: center;
+    min-width: 220px;
+  }
+  .summary-mini-value {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .summary-mini-label {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 6px;
+  }
+
+  /* Legend */
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-light);
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* Full width analytics card */
+  .analytics-card.full-width {
+    grid-column: 1 / -1;
+  }
+
+  /* Trend chart */
+  .trend-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 160px;
+    padding-top: 10px;
+  }
+  .trend-bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .trend-bar {
+    width: 100%;
+    max-width: 48px;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.6s ease;
+    position: relative;
+  }
+  .trend-bar:hover {
+    opacity: 0.85;
+  }
+  .trend-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .trend-label {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 6px;
+    white-space: nowrap;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .record-body { grid-template-columns: 1fr; }
+    .header { padding: 0 16px; }
+    .main { padding: 16px 12px 40px; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .toolbar-left, .toolbar-right { flex-wrap: wrap; }
+    .search-box { width: 100%; }
+    .record-header { flex-direction: column; gap: 8px; }
+    .record-footer { flex-direction: column; gap: 8px; align-items: flex-start; }
+    .analytics-grid { grid-template-columns: 1fr; }
+    .summary-row { justify-content: center; }
+    .bar-label { min-width: 60px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<div class="header" id="appHeader">
+  <div class="header-left">
+    <div class="header-logo">复</div>
+    <div>
+      <div class="header-title">产品复盘议题 · 管理后台</div>
+      <div class="header-subtitle">资管产品运作复盘会 · 内部管理</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-tag" id="meetingInfo">下期复盘会：待定</div>
+  </div>
+</div>
+
+<!-- ===== Main ===== -->
+<div class="main" id="appMain">
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card pending">
+      <div class="stat-label">未复盘</div>
+      <div class="stat-value" id="statPending">0</div>
+    </div>
+    <div class="stat-card completed">
+      <div class="stat-label">已复盘</div>
+      <div class="stat-value" id="statCompleted">0</div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="records">📋 记录管理</button>
+    <button class="tab-btn" data-tab="analytics">📊 统计分析</button>
+  </div>
+
+  <!-- Tab: Records -->
+  <div class="tab-content active" id="tabRecords">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input id="searchInput" placeholder="搜索产品名称、提报人、投资经理...">
+        </div>
+        <div class="filter-group">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="pending">未复盘</button>
+          <button class="filter-btn" data-filter="completed">已复盘</button>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-outline" onclick="exportCSV()">📥 导出CSV</button>
+      </div>
+    </div>
+
+    <!-- Record List -->
+    <div class="record-list-container">
+      <div class="record-list" id="recordList">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <div>加载中...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Analytics -->
+  <div class="tab-content" id="tabAnalytics">
+
+    <!-- Summary Row -->
+    <div class="summary-row">
+      <div class="summary-mini-card">
+        <div class="summary-mini-value" id="summaryCompletionRate" style="color:var(--primary)">0%</div>
+        <div class="summary-mini-label">复盘完成率</div>
+      </div>
+    </div>
+
+    <!-- Analytics Grid -->
+    <div class="analytics-grid">
+      <!-- 投资经理复盘统计 -->
+      <div class="analytics-card">
+        <div class="analytics-card-header">
+          <div class="analytics-card-title"><span class="icon">👔</span> 投资经理复盘统计</div>
+        </div>
+        <div class="analytics-card-body" id="managerChart"></div>
+      </div>
+
+      <!-- 部门提报统计 -->
+      <div class="analytics-card">
+        <div class="analytics-card-header">
+          <div class="analytics-card-title"><span class="icon">🏢</span> 部门提报统计</div>
+        </div>
+        <div class="analytics-card-body" id="deptChart"></div>
+      </div>
+
+      <!-- 议题分类分布 -->
+      <div class="analytics-card">
+        <div class="analytics-card-header">
+          <div class="analytics-card-title"><span class="icon">🏷️</span> 议题分类分布</div>
+        </div>
+        <div class="analytics-card-body" id="categoryChart"></div>
+      </div>
+
+      <!-- 紧急程度分布 -->
+      <div class="analytics-card">
+        <div class="analytics-card-header">
+          <div class="analytics-card-title"><span class="icon">⚡</span> 紧急程度分布</div>
+        </div>
+        <div class="analytics-card-body" id="urgencyChart"></div>
+      </div>
+
+      <!-- 月度提报趋势 -->
+      <div class="analytics-card full-width">
+        <div class="analytics-card-header">
+          <div class="analytics-card-title"><span class="icon">📈</span> 月度提报趋势</div>
+        </div>
+        <div class="analytics-card-body" id="trendChart"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== Toast ===== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ===== Edit Modal ===== -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal detail-modal">
+    <div class="modal-title">编辑议题</div>
+    <div id="editContent"></div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn btn-outline" onclick="closeEditModal()">取消</button>
+      <button class="btn btn-primary" id="saveEditBtn" onclick="saveEdit()">保存修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Delete Modal ===== -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-title">确认删除</div>
+    <div class="modal-body" id="deleteModalBody">确定要删除这条提报记录吗？此操作不可恢复。</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeDeleteModal()">取消</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ========== Config ==========
+const API_BASE = '/api/records';
+
+// ========== Data ==========
+let cachedRecords = [];
+
+async function fetchRecords() {
+  try {
+    const res = await fetch(API_BASE);
+    const data = await res.json();
+    if (data.success) {
+      cachedRecords = data.records || [];
+      return cachedRecords;
+    }
+    showToast('获取数据失败：' + (data.message || '未知错误'), 'error');
+    return cachedRecords;
+  } catch (err) {
+    showToast('网络错误，无法获取数据', 'error');
+    return cachedRecords;
+  }
+}
+
+// ========== Init ==========
+let currentFilter = 'all';
+let searchQuery = '';
+
+initApp();
+
+async function initApp() {
+  await fetchRecords();
+  updateStats();
+  renderList();
+  renderAnalytics();
+}
+
+// ========== Stats ==========
+function updateStats() {
+  const records = cachedRecords;
+  document.getElementById('statPending').textContent = records.filter(r => r.status === 'pending').length;
+  document.getElementById('statCompleted').textContent = records.filter(r => r.status === 'completed').length;
+}
+
+// ========== Tab Navigation ==========
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    const tabId = btn.dataset.tab === 'records' ? 'tabRecords' : 'tabAnalytics';
+    document.getElementById(tabId).classList.add('active');
+    if (btn.dataset.tab === 'analytics') {
+      renderAnalytics();
+    }
+  });
+});
+
+// ========== Render List ==========
+function renderList() {
+  const records = cachedRecords;
+  let filtered = records;
+
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(r => r.status === currentFilter);
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(r =>
+      r.productName.toLowerCase().includes(q) ||
+      r.submitterName.toLowerCase().includes(q) ||
+      (r.investManager && r.investManager.toLowerCase().includes(q))
+    );
+  }
+
+  const listEl = document.getElementById('recordList');
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">${searchQuery || currentFilter !== 'all' ? '未找到匹配记录' : '暂无提报记录'}</div>
+        <div class="empty-desc">${searchQuery || currentFilter !== 'all' ? '尝试调整筛选条件' : '等待客户经理提交复盘议题'}</div>
+      </div>`;
+    return;
+  }
+
+  const urgencyLabel = { low: '一般', medium: '较急', high: '紧急' };
+  const statusLabel = { pending: '未复盘', completed: '已复盘' };
+
+  listEl.innerHTML = filtered.map(r => `
+    <div class="record-card">
+      <div class="record-header">
+        <div class="record-title-area">
+          <span class="record-product-name">${escHtml(r.productName)}</span>
+        </div>
+        <div class="record-badges">
+          <span class="badge badge-${r.urgency}">${urgencyLabel[r.urgency] || r.urgency}</span>
+          <span class="badge badge-${r.status}">${statusLabel[r.status] || r.status}</span>
+        </div>
+      </div>
+      <div class="record-body">
+        <div class="record-field">
+          <span class="record-field-label">投资经理:</span>
+          <span class="record-field-value">${r.investManager ? escHtml(r.investManager) : '-'}</span>
+        </div>
+        <div class="record-field">
+          <span class="record-field-label">提报人:</span>
+          <span class="record-field-value">${escHtml(r.submitterName)}${r.submitterDept ? ' · ' + escHtml(r.submitterDept) : ''}</span>
+        </div>
+        <div class="record-field">
+          <span class="record-field-label">提报日期:</span>
+          <span class="record-field-value">${r.submitDate || '-'}</span>
+        </div>
+        <div class="record-field">
+          <span class="record-field-label">议题分类:</span>
+          <span class="record-field-value">${r.categories ? r.categories.map(c => escHtml(c)).join('、') : '-'}</span>
+        </div>
+        ${r.communicated ? `<div class="record-field"><span class="record-field-label">已沟通:</span><span class="record-field-value">${escHtml(r.communicated)}</span></div>` : ''}
+        <div class="record-reason">
+          <div class="record-reason-label">提报原因</div>
+          ${escHtml(r.reason)}
+          ${r.additionalNote ? `<br><br><em style="color:var(--text-light)">补充：${escHtml(r.additionalNote)}</em>` : ''}
+        </div>
+      </div>
+      <div class="record-footer">
+        <div class="record-meta">
+          <span>提交时间: ${formatTime(r.createdAt)}</span>
+        </div>
+        <div class="record-actions">
+          <button class="action-btn" onclick="openEditById('${r.id}')">编辑</button>
+          ${r.status === 'pending' ? `<button class="action-btn complete" onclick="changeStatus('${r.id}','completed')">标记已复盘</button>` : ''}
+          ${r.status === 'completed' ? `<button class="action-btn reopen" onclick="changeStatus('${r.id}','pending')">标记为未复盘</button>` : ''}
+          <button class="action-btn delete" onclick="openDeleteModal('${r.id}')">删除</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function formatTime(iso) {
+  if (!iso) return '-';
+  try {
+    const d = new Date(iso);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  } catch { return iso; }
+}
+
+// ========== Edit Modal ==========
+let editingRecordId = null;
+
+function openEditById(id) {
+  editingRecordId = id;
+  const r = cachedRecords.find(x => x.id === id);
+  if (!r) { showToast('未找到记录', 'error'); return; }
+
+  const categories = ['业绩不达预期', '投资策略疑问', '交易运营投诉', '其他'];
+  const managers = ['王涛', '邵骏腾', '上官佳依', '宋哲君'];
+  const commOptions = [
+    '是，投资已沟通，但仍不能满足客户需求',
+    '否，客户拒绝单独沟通',
+    '否，需要协调最近可用的投资经理时间',
+    '其他'
+  ];
+
+  document.getElementById('editContent').innerHTML = `
+    <div class="edit-form">
+      <div class="edit-field">
+        <label>产品名称 *</label>
+        <input type="text" id="editProductName" value="${escHtml(r.productName)}" />
+      </div>
+      <div class="edit-field">
+        <label>投资经理 *</label>
+        <select id="editInvestManager">
+          ${managers.map(m => `<option value="${m}" ${r.investManager === m ? 'selected' : ''}>${m}</option>`).join('')}
+        </select>
+      </div>
+      <div class="edit-field">
+        <label>议题分类</label>
+        <div class="edit-tags" id="editCategories">
+          ${categories.map(c => `<span class="edit-tag ${(r.categories && r.categories.includes(c)) ? 'selected' : ''}" onclick="this.classList.toggle('selected')">${c}</span>`).join('')}
+        </div>
+      </div>
+      <div class="edit-field">
+        <label>紧急程度</label>
+        <div class="edit-urgency" id="editUrgency">
+          <div class="edit-urgency-btn ${r.urgency === 'low' ? 'selected low' : ''}" data-val="low" onclick="selectEditUrgency('low')">🟢 一般</div>
+          <div class="edit-urgency-btn ${r.urgency === 'medium' ? 'selected medium' : ''}" data-val="medium" onclick="selectEditUrgency('medium')">🟡 较急</div>
+          <div class="edit-urgency-btn ${r.urgency === 'high' ? 'selected high' : ''}" data-val="high" onclick="selectEditUrgency('high')">🔴 紧急</div>
+        </div>
+      </div>
+      <div class="edit-field">
+        <label>是否已与投资经理沟通</label>
+        <select id="editCommunicated">
+          <option value="">-- 请选择 --</option>
+          ${commOptions.map(o => `<option value="${o}" ${r.communicated === o ? 'selected' : ''}>${o}</option>`).join('')}
+        </select>
+      </div>
+      <div class="edit-field">
+        <label>提报原因 *</label>
+        <textarea id="editReason">${escHtml(r.reason || '')}</textarea>
+      </div>
+      <div class="edit-field">
+        <label>补充说明</label>
+        <textarea id="editAdditionalNote">${escHtml(r.additionalNote || '')}</textarea>
+      </div>
+      <div class="edit-field">
+        <label>客户经理姓名</label>
+        <input type="text" id="editSubmitterName" value="${escHtml(r.submitterName || '')}" />
+      </div>
+      <div class="edit-field">
+        <label>所属部门</label>
+        <input type="text" id="editSubmitterDept" value="${escHtml(r.submitterDept || '')}" />
+      </div>
+    </div>
+  `;
+  document.getElementById('editModal').classList.add('active');
+}
+
+function selectEditUrgency(val) {
+  document.querySelectorAll('#editUrgency .edit-urgency-btn').forEach(b => {
+    b.classList.remove('selected', 'low', 'medium', 'high');
+  });
+  const btn = document.querySelector(`#editUrgency .edit-urgency-btn[data-val="${val}"]`);
+  btn.classList.add('selected', val);
+}
+
+function closeEditModal() {
+  editingRecordId = null;
+  document.getElementById('editModal').classList.remove('active');
+}
+
+async function saveEdit() {
+  if (!editingRecordId) return;
+
+  const productName = document.getElementById('editProductName').value.trim();
+  const investManager = document.getElementById('editInvestManager').value;
+  const reason = document.getElementById('editReason').value.trim();
+  const communicated = document.getElementById('editCommunicated').value;
+  const additionalNote = document.getElementById('editAdditionalNote').value.trim();
+  const submitterName = document.getElementById('editSubmitterName').value.trim();
+  const submitterDept = document.getElementById('editSubmitterDept').value.trim();
+
+  if (!productName) { showToast('产品名称不能为空', 'error'); return; }
+  if (!reason) { showToast('提报原因不能为空', 'error'); return; }
+
+  const selectedCats = [];
+  document.querySelectorAll('#editCategories .edit-tag.selected').forEach(t => {
+    selectedCats.push(t.textContent.trim());
+  });
+
+  const urgencyBtn = document.querySelector('#editUrgency .edit-urgency-btn.selected');
+  const urgency = urgencyBtn ? urgencyBtn.dataset.val : 'low';
+
+  const updatedData = {
+    productName,
+    investManager,
+    categories: selectedCats,
+    urgency,
+    communicated,
+    reason,
+    additionalNote,
+    submitterName,
+    submitterDept
+  };
+
+  const saveBtn = document.getElementById('saveEditBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = '保存中...';
+
+  try {
+    const res = await fetch(`${API_BASE}/${editingRecordId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedData)
+    });
+    const data = await res.json();
+    if (data.success) {
+      await fetchRecords();
+      updateStats();
+      renderList();
+      renderAnalytics();
+      closeEditModal();
+      showToast('修改已保存', 'success');
+    } else {
+      showToast('保存失败：' + (data.message || '未知错误'), 'error');
+    }
+  } catch (err) {
+    showToast('网络错误，保存失败', 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '保存修改';
+  }
+}
+
+// ========== Status Change ==========
+async function changeStatus(id, newStatus) {
+  try {
+    const res = await fetch(`${API_BASE}/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const data = await res.json();
+    if (data.success) {
+      await fetchRecords();
+      updateStats();
+      renderList();
+      renderAnalytics();
+      const label = { completed: '已标记为已复盘', pending: '已标记为未复盘' };
+      showToast(label[newStatus], 'success');
+    } else {
+      showToast('操作失败：' + (data.message || '未知错误'), 'error');
+    }
+  } catch (err) {
+    showToast('网络错误，操作失败', 'error');
+  }
+}
+
+// ========== Delete ==========
+let deleteTargetId = null;
+
+function openDeleteModal(id) {
+  deleteTargetId = id;
+  const r = cachedRecords.find(x => x.id === id);
+  document.getElementById('deleteModalBody').textContent = r
+    ? `确定要删除「${r.productName}」的提报记录吗？此操作不可恢复。`
+    : '确定要删除这条提报记录吗？此操作不可恢复。';
+  document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeDeleteModal() {
+  deleteTargetId = null;
+  document.getElementById('deleteModal').classList.remove('active');
+}
+
+async function confirmDelete() {
+  if (!deleteTargetId) return;
+
+  const delBtn = document.getElementById('confirmDeleteBtn');
+  delBtn.disabled = true;
+  delBtn.textContent = '删除中...';
+
+  try {
+    const res = await fetch(`${API_BASE}/${deleteTargetId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      await fetchRecords();
+      updateStats();
+      renderList();
+      renderAnalytics();
+      showToast('已删除', 'success');
+    } else {
+      showToast('删除失败：' + (data.message || '未知错误'), 'error');
+    }
+  } catch (err) {
+    showToast('网络错误，删除失败', 'error');
+  } finally {
+    delBtn.disabled = false;
+    delBtn.textContent = '确认删除';
+    closeDeleteModal();
+  }
+}
+
+// ========== Filters ==========
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderList();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchQuery = e.target.value.trim();
+  renderList();
+});
+
+// ========== Export CSV ==========
+function exportCSV() {
+  const records = cachedRecords;
+  if (records.length === 0) {
+    showToast('暂无记录可导出', 'error');
+    return;
+  }
+
+  const urgencyLabel = { low: '一般', medium: '较急', high: '紧急' };
+  const statusLabel = { pending: '未复盘', completed: '已复盘' };
+
+  const headers = ['产品名称', '投资经理', '议题分类', '紧急程度', '提报原因', '是否已沟通', '补充说明', '提报人', '所属部门', '提报日期', '状态', '提交时间'];
+  const rows = records.map(r => [
+    csvEscape(r.productName),
+    csvEscape(r.investManager),
+    csvEscape((r.categories || []).join('、')),
+    urgencyLabel[r.urgency] || r.urgency,
+    csvEscape(r.reason),
+    csvEscape(r.communicated),
+    csvEscape(r.additionalNote),
+    csvEscape(r.submitterName),
+    csvEscape(r.submitterDept),
+    r.submitDate || '',
+    statusLabel[r.status] || r.status,
+    formatTime(r.createdAt)
+  ]);
+
+  const bom = '\uFEFF';
+  const csv = bom + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `复盘议题提报_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('导出成功', 'success');
+}
+
+function csvEscape(str) {
+  if (!str) return '';
+  str = String(str);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+// ========== Toast ==========
+function showToast(msg, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ========== Close modals on overlay click ==========
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.classList.remove('active');
+      deleteTargetId = null;
+    }
+  });
+});
+
+// ==========================================
+// ========== Analytics Rendering ==========
+// ==========================================
+
+function renderAnalytics() {
+  const records = cachedRecords;
+  renderSummaryCards(records);
+  renderManagerChart(records);
+  renderDeptChart(records);
+  renderCategoryChart(records);
+  renderUrgencyChart(records);
+  renderTrendChart(records);
+}
+
+// ---------- Summary Cards ----------
+function renderSummaryCards(records) {
+  const total = records.length;
+  const completed = records.filter(r => r.status === 'completed').length;
+  const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+  document.getElementById('summaryCompletionRate').textContent = rate + '%';
+}
+
+// ---------- 投资经理复盘统计 ----------
+function renderManagerChart(records) {
+  const container = document.getElementById('managerChart');
+
+  if (records.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:30px;font-size:13px;">暂无数据</div>';
+    return;
+  }
+
+  const managerMap = {};
+  records.forEach(r => {
+    const name = r.investManager || '未指定';
+    if (!managerMap[name]) {
+      managerMap[name] = { total: 0, pending: 0, completed: 0 };
+    }
+    managerMap[name].total++;
+    managerMap[name][r.status]++;
+  });
+
+  const sorted = Object.entries(managerMap).sort((a, b) => b[1].total - a[1].total);
+  const maxTotal = sorted[0][1].total;
+
+  let html = '<div class="bar-chart">';
+  sorted.forEach(([name, data], idx) => {
+    const barWidth = Math.max((data.total / maxTotal) * 100, 5);
+    const rankClass = idx < 3 ? `rank-${idx + 1}` : 'rank-other';
+    const pendingW = data.pending > 0 ? (data.pending / data.total * barWidth) : 0;
+    const completedW = data.completed > 0 ? (data.completed / data.total * barWidth) : 0;
+
+    html += `
+      <div class="bar-row">
+        <span class="rank-badge ${rankClass}">${idx + 1}</span>
+        <span class="bar-label">${escHtml(name)}</span>
+        <div class="bar-track">
+          <div class="bar-fill stacked" style="width:${barWidth}%">
+            ${pendingW > 3 ? `<div class="bar-segment color-pending" style="width:${data.pending / data.total * 100}%">${data.pending}</div>` : ''}
+            ${completedW > 3 ? `<div class="bar-segment color-completed" style="width:${data.completed / data.total * 100}%">${data.completed}</div>` : ''}
+          </div>
+        </div>
+        <span class="bar-count">${data.total}</span>
+      </div>`;
+  });
+
+  html += `
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div>未复盘</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>已复盘</div>
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+// ---------- 部门提报统计 ----------
+function renderDeptChart(records) {
+  const container = document.getElementById('deptChart');
+
+  if (records.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:30px;font-size:13px;">暂无数据</div>';
+    return;
+  }
+
+  const deptMap = {};
+  records.forEach(r => {
+    const name = r.submitterDept || '未填写部门';
+    if (!deptMap[name]) {
+      deptMap[name] = { total: 0, pending: 0, completed: 0 };
+    }
+    deptMap[name].total++;
+    deptMap[name][r.status]++;
+  });
+
+  const sorted = Object.entries(deptMap).sort((a, b) => b[1].total - a[1].total);
+  const maxTotal = sorted[0][1].total;
+
+  let html = '<div class="bar-chart">';
+  sorted.forEach(([name, data], idx) => {
+    const barWidth = Math.max((data.total / maxTotal) * 100, 5);
+    const rankClass = idx < 3 ? `rank-${idx + 1}` : 'rank-other';
+
+    html += `
+      <div class="bar-row">
+        <span class="rank-badge ${rankClass}">${idx + 1}</span>
+        <span class="bar-label">${escHtml(name)}</span>
+        <div class="bar-track">
+          <div class="bar-fill stacked" style="width:${barWidth}%">
+            ${data.pending > 0 && (data.pending / data.total * 100) > 8 ? `<div class="bar-segment color-pending" style="width:${data.pending / data.total * 100}%">${data.pending}</div>` : ''}
+            ${data.completed > 0 && (data.completed / data.total * 100) > 8 ? `<div class="bar-segment color-completed" style="width:${data.completed / data.total * 100}%">${data.completed}</div>` : ''}
+          </div>
+        </div>
+        <span class="bar-count">${data.total}</span>
+      </div>`;
+  });
+
+  html += `
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div>未复盘</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>已复盘</div>
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+// ---------- 议题分类分布 ----------
+function renderCategoryChart(records) {
+  const container = document.getElementById('categoryChart');
+
+  if (records.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:30px;font-size:13px;">暂无数据</div>';
+    return;
+  }
+
+  const catMap = {};
+  records.forEach(r => {
+    if (r.categories && Array.isArray(r.categories)) {
+      r.categories.forEach(c => {
+        catMap[c] = (catMap[c] || 0) + 1;
+      });
+    }
+  });
+
+  const sorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+  const maxVal = sorted[0] ? sorted[0][1] : 1;
+  const colors = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5'];
+
+  let html = '<div class="bar-chart">';
+  sorted.forEach(([name, count], idx) => {
+    const barWidth = Math.max((count / maxVal) * 100, 8);
+    html += `
+      <div class="bar-row">
+        <span class="bar-label">${escHtml(name)}</span>
+        <div class="bar-track">
+          <div class="bar-fill ${colors[idx % colors.length]}" style="width:${barWidth}%">${count}</div>
+        </div>
+        <span class="bar-count">${count}</span>
+      </div>`;
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+// ---------- 紧急程度分布 ----------
+function renderUrgencyChart(records) {
+  const container = document.getElementById('urgencyChart');
+
+  if (records.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:30px;font-size:13px;">暂无数据</div>';
+    return;
+  }
+
+  const urgencyData = [
+    { key: 'low', label: '🟢 一般', desc: '常规讨论', color: 'color-low', count: 0 },
+    { key: 'medium', label: '🟡 较急', desc: '客户不满', color: 'color-medium', count: 0 },
+    { key: 'high', label: '🔴 紧急', desc: '需尽快响应', color: 'color-high', count: 0 },
+  ];
+
+  records.forEach(r => {
+    const item = urgencyData.find(u => u.key === r.urgency);
+    if (item) item.count++;
+  });
+
+  const maxVal = Math.max(...urgencyData.map(u => u.count), 1);
+
+  let html = '<div class="bar-chart">';
+  urgencyData.forEach(item => {
+    const barWidth = Math.max((item.count / maxVal) * 100, item.count > 0 ? 10 : 2);
+    html += `
+      <div class="bar-row">
+        <span class="bar-label">${item.label}</span>
+        <div class="bar-track">
+          <div class="bar-fill ${item.color}" style="width:${barWidth}%;${item.count === 0 ? 'opacity:0.3' : ''}">${item.count > 0 ? item.count : ''}</div>
+        </div>
+        <span class="bar-count">${item.count}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-light);margin:-8px 0 0 92px;padding-left:0">${item.desc}</div>`;
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+// ---------- 月度提报趋势 ----------
+function renderTrendChart(records) {
+  const container = document.getElementById('trendChart');
+
+  if (records.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:30px;font-size:13px;">暂无数据</div>';
+    return;
+  }
+
+  const monthMap = {};
+  const now = new Date();
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    monthMap[key] = { total: 0, pending: 0, completed: 0 };
+  }
+
+  records.forEach(r => {
+    if (!r.createdAt) return;
+    const d = new Date(r.createdAt);
+    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    if (monthMap[key]) {
+      monthMap[key].total++;
+      monthMap[key][r.status]++;
+    }
+  });
+
+  const months = Object.entries(monthMap);
+  const maxVal = Math.max(...months.map(([, v]) => v.total), 1);
+
+  let html = '<div class="trend-container">';
+  months.forEach(([month, data]) => {
+    const height = data.total > 0 ? Math.max((data.total / maxVal) * 130, 12) : 2;
+    const parts = month.split('-');
+    const label = parts[1] + '月';
+
+    const pendingH = data.pending > 0 ? (data.pending / data.total * height) : 0;
+    const completedH = data.completed > 0 ? (data.completed / data.total * height) : 0;
+
+    html += `
+      <div class="trend-bar-group">
+        <span class="trend-count">${data.total > 0 ? data.total : ''}</span>
+        <div style="width:100%;max-width:48px;display:flex;flex-direction:column-reverse;border-radius:4px 4px 0 0;overflow:hidden;">
+          ${pendingH > 0 ? `<div style="height:${pendingH}px;background:var(--warning)"></div>` : ''}
+          ${completedH > 0 ? `<div style="height:${completedH}px;background:var(--success)"></div>` : ''}
+          ${data.total === 0 ? `<div style="height:2px;background:var(--border)"></div>` : ''}
+        </div>
+        <span class="trend-label">${label}</span>
+      </div>`;
+  });
+  html += `
+    </div>
+    <div class="chart-legend" style="margin-top:16px;">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div>未复盘</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>已复盘</div>
+    </div>`;
+
+  container.innerHTML = html;
+}
+</script>
+</body>
+</html>
