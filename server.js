@@ -70,23 +70,85 @@ const User = mongoose.model('User', userSchema);
 const Session = mongoose.model('Session', sessionSchema);
 
 // ========== 连接 MongoDB ==========
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_INTERVAL = 300000; // 最长5分钟重试一次
+const BASE_RECONNECT_INTERVAL = 10000; // 初始10秒重试
+
 async function connectDB() {
   try {
     console.log('🔄 正在连接 MongoDB...', MONGODB_URI.replace(/:([^@]+)@/, ':****@'));
     await mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 10000,
       connectTimeoutMS: 10000,
-      socketTimeoutMS: 30000
+      socketTimeoutMS: 30000,
+      // 自动重连配置
+      autoIndex: true,
     });
     console.log('✅ MongoDB 连接成功');
+    useMemoryStore = false;
+    reconnectAttempts = 0;
     return true;
   } catch (err) {
     console.warn('⚠️  MongoDB 连接失败:', err.message);
+    console.warn('⚠️  错误类型:', err.name);
+    if (err.reason) {
+      console.warn('⚠️  错误原因:', err.reason?.topologyDescription?.servers ?
+        JSON.stringify(Object.keys(err.reason.topologyDescription.servers)) : '未知');
+    }
     console.warn('⚠️  回退到内存存储模式（数据仅保存在内存中，重启后丢失）');
     useMemoryStore = true;
+    scheduleReconnect();
     return false;
   }
 }
+
+function scheduleReconnect() {
+  if (reconnectTimer) return; // 已有重连计划
+  reconnectAttempts++;
+  // 指数退避：10s, 20s, 40s, 80s... 最长5分钟
+  const delay = Math.min(BASE_RECONNECT_INTERVAL * Math.pow(2, reconnectAttempts - 1), MAX_RECONNECT_INTERVAL);
+  console.log(`🔄 将在 ${delay/1000}s 后重试连接 MongoDB (第${reconnectAttempts}次重试)`);
+  reconnectTimer = setTimeout(async () => {
+    reconnectTimer = null;
+    if (mongoose.connection.readyState === 1) {
+      console.log('✅ MongoDB 已连接，无需重试');
+      return;
+    }
+    console.log('🔄 正在重试连接 MongoDB...');
+    try {
+      await mongoose.connect(MONGODB_URI, {
+        serverSelectionTimeoutMS: 10000,
+        connectTimeoutMS: 10000,
+        socketTimeoutMS: 30000,
+      });
+      console.log('✅ MongoDB 重连成功！');
+      useMemoryStore = false;
+      reconnectAttempts = 0;
+    } catch (err) {
+      console.warn('⚠️  MongoDB 重连失败:', err.message);
+      useMemoryStore = true;
+      scheduleReconnect(); // 继续重试
+    }
+  }, delay);
+}
+
+// 监听 Mongoose 连接事件
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️  MongoDB 连接断开，将尝试自动重连...');
+  useMemoryStore = true;
+  scheduleReconnect();
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('✅ MongoDB 自动重连成功');
+  useMemoryStore = false;
+  reconnectAttempts = 0;
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('❌ MongoDB 连接错误:', err.message);
+});
 
 // ========== 认证中间件 ==========
 async function authMiddleware(req, res, next) {
@@ -519,13 +581,41 @@ app.patch('/api/records/:id/status', async (req, res) => {
 
 // ========== 健康检查 ==========
 app.get('/api/health', (req, res) => {
+  const stateMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
   res.json({
     success: true,
     storage: useMemoryStore ? 'memory (数据会丢失!)' : 'mongodb (数据持久化)',
     mongodbConfigured: !!process.env.MONGODB_URI,
-    mongooseState: mongoose.connection.readyState, // 0=disconnected,1=connected,2=connecting,3=disconnecting
+    mongooseState: mongoose.connection.readyState,
+    mongooseStateText: stateMap[mongoose.connection.readyState] || 'unknown',
+    reconnectAttempts,
+    memoryRecordCount: memoryRecords.length,
+    memoryUserCount: memoryUsers.length,
     uptime: process.uptime()
   });
+});
+
+// 手动触发重连 MongoDB（管理页面用）
+app.post('/api/reconnect-db', async (req, res) => {
+  if (!process.env.MONGODB_URI) {
+    return res.json({ success: false, message: '未配置 MONGODB_URI 环境变量' });
+  }
+  try {
+    if (mongoose.connection.readyState === 1) {
+      return res.json({ success: true, message: 'MongoDB 已连接，无需重连' });
+    }
+    console.log('🔄 手动触发 MongoDB 重连...');
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 30000,
+    });
+    useMemoryStore = false;
+    reconnectAttempts = 0;
+    res.json({ success: true, message: 'MongoDB 重连成功！' });
+  } catch (err) {
+    res.json({ success: false, message: '重连失败: ' + err.message + ' — 请检查 MongoDB Atlas Network Access 是否允许 0.0.0.0/0' });
+  }
 });
 
 // ========== 启动服务器 ==========

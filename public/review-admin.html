@@ -782,6 +782,18 @@
 <!-- ===== Main ===== -->
 <div class="main" id="appMain">
 
+  <!-- DB Status Banner (hidden when connected) -->
+  <div id="dbStatusBanner" style="display:none;background:var(--danger-light);border:1px solid var(--danger);border-radius:var(--radius);padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;">⚠️</span>
+      <div>
+        <div style="font-weight:600;color:var(--danger);font-size:14px;">数据库未连接，数据仅保存在内存中</div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:2px;">服务器重启后数据将丢失，请检查 MongoDB Atlas 设置</div>
+      </div>
+    </div>
+    <button onclick="tryReconnectDB()" style="padding:8px 18px;background:var(--danger);color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap;">🔄 重新连接</button>
+  </div>
+
   <!-- Stats -->
   <div class="stats-bar">
     <div class="stat-card pending">
@@ -1064,10 +1076,48 @@ let searchQuery = '';
 // initApp() 在管理员密码验证通过后调用
 
 async function initApp() {
+  checkDBStatus();
   await fetchRecords();
   updateStats();
   renderList();
   renderAnalytics();
+}
+
+// ========== 数据库状态检查 ==========
+async function checkDBStatus() {
+  try {
+    const res = await fetch('/api/health');
+    const data = await res.json();
+    const banner = document.getElementById('dbStatusBanner');
+    if (data.storage && data.storage.includes('memory')) {
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  } catch (e) {
+    console.warn('健康检查失败:', e);
+  }
+}
+
+async function tryReconnectDB() {
+  const btn = event.target;
+  btn.textContent = '⏳ 连接中...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/reconnect-db', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert('✅ ' + data.message);
+      location.reload();
+    } else {
+      alert('❌ ' + data.message);
+    }
+  } catch (e) {
+    alert('❌ 请求失败: ' + e.message);
+  } finally {
+    btn.textContent = '🔄 重新连接';
+    btn.disabled = false;
+  }
 }
 
 // ========== Stats ==========
