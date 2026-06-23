@@ -71,9 +71,11 @@ const Session = mongoose.model('Session', sessionSchema);
 // ========== 连接 MongoDB ==========
 async function connectDB() {
   try {
+    console.log('🔄 正在连接 MongoDB...', MONGODB_URI.replace(/:([^@]+)@/, ':****@'));
     await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 3000,
-      connectTimeoutMS: 3000
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 30000
     });
     console.log('✅ MongoDB 连接成功');
     return true;
@@ -491,6 +493,7 @@ app.get('/api/health', (req, res) => {
     success: true,
     storage: useMemoryStore ? 'memory (数据会丢失!)' : 'mongodb (数据持久化)',
     mongodbConfigured: !!process.env.MONGODB_URI,
+    mongooseState: mongoose.connection.readyState, // 0=disconnected,1=connected,2=connecting,3=disconnecting
     uptime: process.uptime()
   });
 });
