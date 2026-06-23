@@ -784,6 +784,7 @@
   <div class="tab-nav">
     <button class="tab-btn active" data-tab="records">📋 记录管理</button>
     <button class="tab-btn" data-tab="analytics">📊 统计分析</button>
+    <button class="tab-btn" data-tab="users">👥 用户管理</button>
   </div>
 
   <!-- Tab: Records -->
@@ -872,10 +873,33 @@
     </div>
   </div>
 
-</div>
+  <!-- Tab: Users -->
+  <div class="tab-content" id="tabUsers">
+    <div style="padding: 20px 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h3 style="font-size:16px;font-weight:600;color:var(--primary);">已注册客户经理</h3>
+        <button class="btn btn-outline" onclick="loadUsers()" style="padding:6px 14px;font-size:12px;">🔄 刷新</button>
+      </div>
+      <div id="userListContainer">
+        <div class="loading-state">加载中...</div>
+      </div>
+    </div>
+  </div>
 
-<!-- ===== Toast ===== -->
+</div>
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- ===== Edit User Dept Modal ===== -->
+<div class="modal-overlay" id="editUserDeptModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-title">修改用户部门</div>
+    <div id="editUserDeptContent"></div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn btn-outline" onclick="closeEditUserDeptModal()">取消</button>
+      <button class="btn btn-primary" id="saveUserDeptBtn" onclick="saveUserDept()">保存</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== Edit Modal ===== -->
 <div class="modal-overlay" id="editModal">
@@ -914,7 +938,7 @@ async function fetchRecords() {
     const res = await fetch(API_BASE);
     const data = await res.json();
     if (data.success) {
-      cachedRecords = data.records || [];
+      cachedRecords = data.data || [];
       return cachedRecords;
     }
     showToast('获取数据失败：' + (data.message || '未知错误'), 'error');
@@ -951,10 +975,14 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
-    const tabId = btn.dataset.tab === 'records' ? 'tabRecords' : 'tabAnalytics';
+    const tabMap = { records: 'tabRecords', analytics: 'tabAnalytics', users: 'tabUsers' };
+    const tabId = tabMap[btn.dataset.tab] || 'tabRecords';
     document.getElementById(tabId).classList.add('active');
     if (btn.dataset.tab === 'analytics') {
       renderAnalytics();
+    }
+    if (btn.dataset.tab === 'users') {
+      loadUsers();
     }
   });
 });
@@ -1362,6 +1390,7 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     if (e.target === overlay) {
       overlay.classList.remove('active');
       deleteTargetId = null;
+      editingUserUsername = null;
     }
   });
 });
@@ -1630,6 +1659,125 @@ function renderTrendChart(records) {
     </div>`;
 
   container.innerHTML = html;
+}
+
+// ========== User Management ==========
+async function loadUsers() {
+  const container = document.getElementById('userListContainer');
+  container.innerHTML = '<div class="loading-state">加载中...</div>';
+
+  try {
+    const res = await fetch('/api/users');
+    const data = await res.json();
+
+    if (data.success) {
+      const users = data.data || [];
+      if (users.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="padding:40px;"><div style="font-size:40px;margin-bottom:12px;">👥</div><div style="color:var(--text-light);">暂无注册用户</div></div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div style="display:grid;gap:10px;">
+          ${users.map((u, i) => `
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:8px;">
+              <div style="width:38px;height:38px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--primary);flex-shrink:0;">${u.username.charAt(0)}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:14px;font-weight:600;color:var(--text);">${escapeHtml(u.username)}</div>
+                <div style="font-size:12px;color:var(--text-light);">${u.department ? escapeHtml(u.department) : '未填写部门'}</div>
+              </div>
+              <button class="action-btn" onclick="openEditUserDeptModal('${escapeHtml(u.username)}','${u.department ? escapeHtml(u.department) : ''}')" style="flex-shrink:0;">修改部门</button>
+              <div style="font-size:12px;color:var(--text-light);flex-shrink:0;">
+                注册于 ${u.createdAt ? new Date(u.createdAt).toLocaleDateString('zh-CN') : '-'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="margin-top:16px;padding:12px 16px;background:var(--info-light);border-radius:8px;font-size:13px;color:var(--primary);">
+          💡 共 <strong>${users.length}</strong> 位客户经理已注册。修改部门后将同步更新该用户所有提报记录的部门信息。
+        </div>
+      `;
+    } else {
+      container.innerHTML = '<div class="empty-state" style="padding:40px;"><div style="color:var(--danger);">加载失败</div></div>';
+    }
+  } catch (err) {
+    container.innerHTML = '<div class="empty-state" style="padding:40px;"><div style="color:var(--danger);">网络错误</div></div>';
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ========== Edit User Department ==========
+let editingUserUsername = null;
+
+function openEditUserDeptModal(username, currentDept) {
+  editingUserUsername = username;
+  document.getElementById('editUserDeptContent').innerHTML = `
+    <div class="edit-form">
+      <div class="edit-field">
+        <label>用户姓名</label>
+        <input type="text" value="${escapeHtml(username)}" disabled style="background:#f0f2f5;color:var(--text-light);" />
+      </div>
+      <div class="edit-field">
+        <label>所属部门</label>
+        <input type="text" id="editUserDeptInput" value="${escapeHtml(currentDept)}" placeholder="请输入部门名称" />
+      </div>
+      <div style="font-size:12px;color:var(--text-light);padding:4px 0;">
+        ⚠️ 修改后将同步更新该用户所有提报记录的部门信息
+      </div>
+    </div>
+  `;
+  document.getElementById('editUserDeptModal').classList.add('active');
+}
+
+function closeEditUserDeptModal() {
+  editingUserUsername = null;
+  document.getElementById('editUserDeptModal').classList.remove('active');
+}
+
+async function saveUserDept() {
+  if (!editingUserUsername) return;
+
+  const department = document.getElementById('editUserDeptInput').value.trim();
+  if (!department) {
+    showToast('部门不能为空', 'error');
+    return;
+  }
+
+  const saveBtn = document.getElementById('saveUserDeptBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = '保存中...';
+
+  try {
+    const res = await fetch(`/api/users/${encodeURIComponent(editingUserUsername)}/department`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ department })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeEditUserDeptModal();
+      loadUsers();
+      // 同时刷新记录列表（因为部门可能已同步更新）
+      await fetchRecords();
+      updateStats();
+      renderList();
+      renderAnalytics();
+      showToast(`已更新 ${editingUserUsername} 的部门为「${department}」`, 'success');
+    } else {
+      showToast('更新失败：' + (data.message || '未知错误'), 'error');
+    }
+  } catch (err) {
+    showToast('网络错误，更新失败', 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '保存';
+  }
 }
 </script>
 </body>

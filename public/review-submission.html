@@ -38,6 +38,146 @@
     min-height: 100vh;
   }
 
+  /* ========== Login Overlay ========== */
+  .login-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, #1a3a5c 0%, #2c5f8a 50%, #1a3a5c 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  .login-overlay.hidden { display: none; }
+
+  .login-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    width: 400px;
+    max-width: 90vw;
+    overflow: hidden;
+  }
+  .login-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    padding: 32px 28px 24px;
+    text-align: center;
+    color: white;
+  }
+  .login-header .login-logo {
+    width: 56px; height: 56px;
+    background: var(--accent);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 28px; color: var(--primary);
+    margin: 0 auto 14px;
+  }
+  .login-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .login-header p {
+    font-size: 13px;
+    opacity: 0.8;
+  }
+
+  .login-body {
+    padding: 28px;
+  }
+  .login-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 4px;
+  }
+  .login-tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-light);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .login-tab.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    font-weight: 600;
+  }
+
+  .login-form-group {
+    margin-bottom: 16px;
+  }
+  .login-form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .login-form-group input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text);
+    background: #fafbfc;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+  .login-form-group input:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(44,95,138,0.1);
+    background: white;
+  }
+  .login-form-group .form-hint {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+  .login-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(26,58,92,0.25);
+    transition: all 0.2s;
+    font-family: inherit;
+    margin-top: 8px;
+  }
+  .login-btn:hover {
+    box-shadow: 0 4px 16px rgba(26,58,92,0.35);
+    transform: translateY(-1px);
+  }
+  .login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .login-error {
+    background: var(--danger-light);
+    color: var(--danger);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .login-error.show { display: block; }
+
   /* Header */
   .header {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
@@ -75,7 +215,7 @@
     margin-top: 1px;
   }
   .header-right {
-    display: flex; align-items: center; gap: 16px;
+    display: flex; align-items: center; gap: 12px;
   }
   .header-badge {
     background: rgba(255,255,255,0.15);
@@ -97,6 +237,20 @@
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 12px; font-weight: 600; color: var(--primary);
+  }
+  .logout-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: inherit;
+  }
+  .logout-btn:hover {
+    background: rgba(255,255,255,0.25);
   }
 
   /* Main Layout */
@@ -347,22 +501,12 @@
     justify-content: space-between;
     margin-bottom: 16px;
   }
-  .name-lookup {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  .my-records-welcome {
+    font-size: 15px;
+    color: var(--text);
   }
-  .name-lookup input {
-    padding: 8px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    font-size: 14px;
-    width: 180px;
-  }
-  .name-lookup input:focus {
-    outline: none;
-    border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(44,95,138,0.1);
+  .my-records-welcome strong {
+    color: var(--primary);
   }
   .empty-state {
     text-align: center;
@@ -628,12 +772,66 @@
     .detail-row { flex-direction: column; gap: 4px; }
     .detail-label { width: auto; }
     .supplement-input-area { flex-direction: column; }
-    .name-lookup input { width: 140px; }
     .tab-item { padding: 10px 16px; font-size: 14px; }
+    .login-card { width: 95vw; }
   }
 </style>
 </head>
 <body>
+
+<!-- Login Overlay -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">复</div>
+      <h2>产品复盘议题提报</h2>
+      <p>资管产品运作复盘会 · 议题收集</p>
+    </div>
+    <div class="login-body">
+      <div class="login-error" id="loginError"></div>
+
+      <div class="login-tabs">
+        <div class="login-tab active" data-mode="login" onclick="switchLoginMode('login')">登录</div>
+        <div class="login-tab" data-mode="register" onclick="switchLoginMode('register')">首次注册</div>
+      </div>
+
+      <!-- Login Form -->
+      <div id="loginFormArea">
+        <div class="login-form-group">
+          <label>姓名</label>
+          <input type="text" id="loginName" placeholder="请输入您的姓名" autocomplete="off">
+        </div>
+        <div class="login-form-group">
+          <label>密码</label>
+          <input type="password" id="loginPassword" placeholder="请输入密码">
+        </div>
+        <button class="login-btn" onclick="handleLogin()">登 录</button>
+      </div>
+
+      <!-- Register Form -->
+      <div id="registerFormArea" style="display:none">
+        <div class="login-form-group">
+          <label>姓名</label>
+          <input type="text" id="regName" placeholder="请输入您的真实姓名" autocomplete="off">
+        </div>
+        <div class="login-form-group">
+          <label>设置密码</label>
+          <input type="password" id="regPassword" placeholder="至少4位密码">
+          <div class="form-hint">请设置您的登录密码，下次登录时使用</div>
+        </div>
+        <div class="login-form-group">
+          <label>确认密码</label>
+          <input type="password" id="regPassword2" placeholder="再次输入密码">
+        </div>
+        <div class="login-form-group">
+          <label>所属部门（选填）</label>
+          <input type="text" id="regDept" placeholder="如：财富管理部">
+        </div>
+        <button class="login-btn" onclick="handleRegister()">注册并登录</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Header -->
 <div class="header">
@@ -650,6 +848,7 @@
       <div class="avatar" id="userAvatar">客</div>
       <span id="currentUser">客户经理</span>
     </div>
+    <button class="logout-btn" onclick="handleLogout()">退出登录</button>
   </div>
 </div>
 
@@ -756,12 +955,12 @@
           </div>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">客户经理姓名<span class="required">*</span></label>
-              <input class="form-input" id="submitterName" placeholder="您的姓名" required>
+              <label class="form-label">客户经理姓名</label>
+              <input class="form-input" id="submitterName" readonly style="background:#f0f2f5;color:var(--text-light)">
             </div>
             <div class="form-group">
               <label class="form-label">所属部门</label>
-              <input class="form-input" id="submitterDept" placeholder="如：财富管理部">
+              <input class="form-input" id="submitterDept" readonly style="background:#f0f2f5;color:var(--text-light)">
             </div>
             <div class="form-group">
               <label class="form-label">提报日期</label>
@@ -780,16 +979,13 @@
     <!-- Tab: 我的提报 -->
     <div class="tab-content" id="tab-myrecords">
       <div class="my-records-header">
-        <div class="name-lookup">
-          <input type="text" id="lookupName" placeholder="输入您的姓名">
-          <button class="btn btn-primary btn-small" onclick="loadMyRecords()">查询</button>
-        </div>
+        <div class="my-records-welcome" id="myRecordsWelcome">查看您的提报记录</div>
       </div>
       <div id="myRecordsList">
         <div class="empty-state">
           <div class="empty-icon">📋</div>
-          <div class="empty-text">输入姓名查看您的提报记录</div>
-          <div class="empty-hint">只有您自己提报的记录会显示在这里</div>
+          <div class="empty-text">暂无提报记录</div>
+          <div class="empty-hint">提交议题后将在此处显示</div>
         </div>
       </div>
     </div>
@@ -801,9 +997,163 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ========== API 配置 ==========
+// ========== State ==========
 const API_BASE = '/api/records';
+const AUTH_BASE = '/api/auth';
+let authToken = localStorage.getItem('review_auth_token') || '';
+let currentUser = localStorage.getItem('review_auth_user') || '';
+let currentDept = localStorage.getItem('review_auth_dept') || '';
 let myCachedRecords = [];
+
+// ========== Init ==========
+document.addEventListener('DOMContentLoaded', async () => {
+  if (authToken) {
+    const valid = await verifyToken();
+    if (valid) {
+      enterApp();
+    } else {
+      showLogin();
+    }
+  } else {
+    showLogin();
+  }
+});
+
+// ========== Auth Functions ==========
+function showLogin() {
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  authToken = '';
+  currentUser = '';
+  currentDept = '';
+  localStorage.removeItem('review_auth_token');
+  localStorage.removeItem('review_auth_user');
+  localStorage.removeItem('review_auth_dept');
+}
+
+function enterApp() {
+  document.getElementById('loginOverlay').classList.add('hidden');
+  // 填充用户信息
+  document.getElementById('userAvatar').textContent = currentUser.charAt(0);
+  document.getElementById('currentUser').textContent = currentUser;
+  document.getElementById('submitterName').value = currentUser;
+  document.getElementById('submitterDept').value = currentDept;
+  document.getElementById('submitDate').value = new Date().toISOString().split('T')[0];
+  // 自动加载我的提报
+  loadMyRecords();
+}
+
+async function verifyToken() {
+  try {
+    const res = await fetch(AUTH_BASE + '/verify', {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await res.json();
+    if (data.success) {
+      currentUser = data.data.username;
+      currentDept = data.data.department || '';
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function switchLoginMode(mode) {
+  document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.login-tab[data-mode="${mode}"]`).classList.add('active');
+  document.getElementById('loginFormArea').style.display = mode === 'login' ? 'block' : 'none';
+  document.getElementById('registerFormArea').style.display = mode === 'register' ? 'block' : 'none';
+  document.getElementById('loginError').classList.remove('show');
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function handleLogin() {
+  const name = document.getElementById('loginName').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!name) { showLoginError('请输入姓名'); return; }
+  if (!password) { showLoginError('请输入密码'); return; }
+
+  try {
+    const res = await fetch(AUTH_BASE + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: name, password })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      authToken = data.data.token;
+      currentUser = data.data.username;
+      currentDept = data.data.department || '';
+      localStorage.setItem('review_auth_token', authToken);
+      localStorage.setItem('review_auth_user', currentUser);
+      localStorage.setItem('review_auth_dept', currentDept);
+      showToast('登录成功，欢迎 ' + currentUser, 'success');
+      enterApp();
+    } else {
+      showLoginError(data.message || '登录失败');
+    }
+  } catch (err) {
+    showLoginError('网络错误，请重试');
+  }
+}
+
+async function handleRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const password2 = document.getElementById('regPassword2').value;
+  const dept = document.getElementById('regDept').value.trim();
+
+  if (!name) { showLoginError('请输入姓名'); return; }
+  if (!password || password.length < 4) { showLoginError('密码至少4位'); return; }
+  if (password !== password2) { showLoginError('两次密码不一致'); return; }
+
+  try {
+    const res = await fetch(AUTH_BASE + '/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: name, password, department: dept })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      authToken = data.data.token;
+      currentUser = data.data.username;
+      currentDept = data.data.department || '';
+      localStorage.setItem('review_auth_token', authToken);
+      localStorage.setItem('review_auth_user', currentUser);
+      localStorage.setItem('review_auth_dept', currentDept);
+      showToast('注册成功，欢迎 ' + currentUser, 'success');
+      enterApp();
+    } else {
+      showLoginError(data.message || '注册失败');
+    }
+  } catch (err) {
+    showLoginError('网络错误，请重试');
+  }
+}
+
+async function handleLogout() {
+  try {
+    await fetch(AUTH_BASE + '/logout', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+  } catch {}
+  showToast('已退出登录', 'success');
+  showLogin();
+}
+
+// Enter key for login forms
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+document.getElementById('regPassword2').addEventListener('keydown', e => { if (e.key === 'Enter') handleRegister(); });
 
 // ========== Tab Switch ==========
 document.querySelectorAll('.tab-item').forEach(tab => {
@@ -830,14 +1180,6 @@ document.querySelectorAll('.urgency-option').forEach(opt => {
   });
 });
 
-// ========== Set Today's Date ==========
-document.getElementById('submitDate').value = new Date().toISOString().split('T')[0];
-
-// ========== 提交后自动填充姓名到查询框 ==========
-function syncNameToLookup(name) {
-  document.getElementById('lookupName').value = name;
-}
-
 // ========== Form Submit ==========
 document.getElementById('submitForm').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -847,7 +1189,6 @@ document.getElementById('submitForm').addEventListener('submit', async function(
   const selectedCategories = [...document.querySelectorAll('.category-tag.selected')].map(t => t.dataset.value);
   const selectedUrgency = document.querySelector('.urgency-option.selected');
   const reason = document.getElementById('reason').value.trim();
-  const submitterName = document.getElementById('submitterName').value.trim();
 
   // Validation
   if (!productName) { showToast('请填写产品名称', 'error'); return; }
@@ -855,7 +1196,6 @@ document.getElementById('submitForm').addEventListener('submit', async function(
   if (selectedCategories.length === 0) { showToast('请选择至少一个议题分类', 'error'); return; }
   if (!selectedUrgency) { showToast('请选择紧急程度', 'error'); return; }
   if (!reason) { showToast('请填写提报原因', 'error'); return; }
-  if (!submitterName) { showToast('请填写客户经理姓名', 'error'); return; }
 
   const record = {
     productName,
@@ -865,8 +1205,8 @@ document.getElementById('submitForm').addEventListener('submit', async function(
     reason,
     communicated: document.getElementById('communicated').value,
     additionalNote: document.getElementById('additionalNote').value.trim(),
-    submitterName,
-    submitterDept: document.getElementById('submitterDept').value.trim(),
+    submitterName: currentUser,  // 使用登录用户名
+    submitterDept: currentDept,
     submitDate: document.getElementById('submitDate').value,
     status: 'pending',
     createdAt: new Date().toISOString()
@@ -880,14 +1220,23 @@ document.getElementById('submitForm').addEventListener('submit', async function(
   try {
     const res = await fetch(API_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + authToken
+      },
       body: JSON.stringify(record)
     });
+
+    if (res.status === 401) {
+      showToast('登录已过期，请重新登录', 'error');
+      showLogin();
+      return;
+    }
+
     const data = await res.json();
 
     if (data.success) {
       showToast('议题提报成功！已加入复盘议题池', 'success');
-      syncNameToLookup(submitterName);
       resetForm();
       // 切换到"我的提报"并自动刷新
       document.querySelector('.tab-item[data-tab="myrecords"]').click();
@@ -910,25 +1259,30 @@ function resetForm() {
   document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('selected'));
   document.querySelectorAll('.urgency-option').forEach(o => o.classList.remove('selected'));
   document.getElementById('submitDate').value = new Date().toISOString().split('T')[0];
+  // 保持提报人信息
+  document.getElementById('submitterName').value = currentUser;
+  document.getElementById('submitterDept').value = currentDept;
 }
 
 // ========== Load My Records ==========
 async function loadMyRecords() {
-  const name = document.getElementById('lookupName').value.trim();
-  if (!name) {
-    showToast('请输入您的姓名', 'error');
-    return;
-  }
-
-  // 更新头部显示
-  document.getElementById('userAvatar').textContent = name.charAt(0);
-  document.getElementById('currentUser').textContent = name;
-
   const listEl = document.getElementById('myRecordsList');
   listEl.innerHTML = '<div class="loading-spinner">加载中...</div>';
 
+  // 更新欢迎信息
+  document.getElementById('myRecordsWelcome').innerHTML = '<strong>' + escapeHtml(currentUser) + '</strong> 的提报记录';
+
   try {
-    const res = await fetch(`${API_BASE}/by-submitter/${encodeURIComponent(name)}`);
+    const res = await fetch(API_BASE + '/by-submitter/' + encodeURIComponent(currentUser), {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+
+    if (res.status === 401) {
+      showToast('登录已过期，请重新登录', 'error');
+      showLogin();
+      return;
+    }
+
     const data = await res.json();
 
     if (data.success) {
@@ -943,14 +1297,6 @@ async function loadMyRecords() {
     console.error('查询失败:', err);
   }
 }
-
-// ========== 回车查询 ==========
-document.getElementById('lookupName').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    loadMyRecords();
-  }
-});
 
 // ========== Render My Records ==========
 function renderMyRecords(records) {
@@ -1064,16 +1410,24 @@ async function submitSupplement(recordId) {
   try {
     const res = await fetch(`${API_BASE}/${recordId}/supplement`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + authToken
+      },
       body: JSON.stringify({ content })
     });
+
+    if (res.status === 401) {
+      showToast('登录已过期，请重新登录', 'error');
+      showLogin();
+      return;
+    }
+
     const data = await res.json();
 
     if (data.success) {
       showToast('补充说明已追加', 'success');
-      // 刷新列表
       await loadMyRecords();
-      // 重新展开该卡片
       setTimeout(() => {
         const card = document.getElementById('card-' + recordId);
         if (card) card.classList.add('expanded');
