@@ -830,6 +830,7 @@
       </div>
       <div class="toolbar-right">
         <button class="btn btn-outline" onclick="exportCSV()">📥 导出CSV</button>
+        <button class="btn btn-outline" onclick="exportFullBackup()" style="margin-left:8px;background:var(--primary);color:#fff;">💾 完整备份</button>
       </div>
     </div>
 
@@ -1530,6 +1531,25 @@ function csvEscape(str) {
     return '"' + str.replace(/"/g, '""') + '"';
   }
   return str;
+}
+
+// ========== 完整备份导出 ==========
+async function exportFullBackup() {
+  try {
+    const res = await fetch('/api/export/full');
+    if (!res.ok) throw new Error('导出失败');
+    const data = await res.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `复盘议题完整备份_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`备份成功！共 ${data.recordCount} 条记录，${data.userCount} 位用户`, 'success');
+  } catch (e) {
+    showToast('备份失败: ' + e.message, 'error');
+  }
 }
 
 // ========== Toast ==========

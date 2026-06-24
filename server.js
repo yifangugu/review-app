@@ -618,6 +618,33 @@ app.post('/api/reconnect-db', async (req, res) => {
   }
 });
 
+// ========== 完整数据备份导出 ==========
+app.get('/api/export/full', async (req, res) => {
+  try {
+    let records, users;
+    if (useMemoryStore) {
+      records = memoryRecords;
+      users = memoryUsers.map(u => ({ username: u.username, department: u.department, role: u.role, createdAt: u.createdAt }));
+    } else {
+      records = await Record.find({}).lean();
+      users = await User.find({}).select('-passwordHash').lean();
+    }
+    const backup = {
+      exportDate: new Date().toISOString(),
+      version: '1.0',
+      recordCount: records.length,
+      userCount: users.length,
+      records,
+      users
+    };
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="review_backup_${new Date().toISOString().split('T')[0]}.json"`);
+    res.json(backup);
+  } catch (err) {
+    res.status(500).json({ success: false, message: '导出失败' });
+  }
+});
+
 // ========== 启动服务器 ==========
 connectDB().then(() => {
   app.listen(PORT, () => {
