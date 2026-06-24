@@ -125,6 +125,8 @@ function scheduleReconnect() {
       console.log('✅ MongoDB 重连成功！');
       useMemoryStore = false;
       reconnectAttempts = 0;
+      // 自动回迁内存数据到 MongoDB
+      await syncMemoryToMongo();
     } catch (err) {
       console.warn('⚠️  MongoDB 重连失败:', err.message);
       useMemoryStore = true;
@@ -133,17 +135,86 @@ function scheduleReconnect() {
   }, delay);
 }
 
-// 监听 Mongoose 连接事件
+// ========== 内存数据回迁到 MongoDB ==========
+async function syncMemoryToMongo() {
+  if (memoryRecords.length === 0 && memoryUsers.length === 0) {
+    console.log('📦 内存中无数据需要回迁');
+    return;
+  }
+
+  console.log(`📦 开始回迁内存数据: ${memoryRecords.length} 条记录, ${memoryUsers.length} 个用户`);
+
+  // 回迁用户
+  let userSyncCount = 0;
+  for (const mu of memoryUsers) {
+    try {
+      const existing = await User.findOne({ username: mu.username });
+      if (!existing) {
+        await User.create({
+          username: mu.username,
+          passwordHash: mu.passwordHash,
+          department: mu.department || '',
+          role: mu.role || 'user',
+          createdAt: mu.createdAt || new Date()
+        });
+        userSyncCount++;
+        console.log(`  ✅ 回迁用户: ${mu.username}`);
+      } else {
+        console.log(`  ⏭️  用户已存在，跳过: ${mu.username}`);
+      }
+    } catch (err) {
+      console.error(`  ❌ 回迁用户失败 ${mu.username}:`, err.message);
+    }
+  }
+
+  // 回迁记录
+  let recordSyncCount = 0;
+  for (const mr of memoryRecords) {
+    try {
+      const existing = await Record.findOne({ id: mr.id });
+      if (!existing) {
+        await Record.create({
+          id: mr.id,
+          productName: mr.productName,
+          investManager: mr.investManager || '',
+          categories: mr.categories || [],
+          urgency: mr.urgency || 'normal',
+          reason: mr.reason || '',
+          communicated: mr.communicated || '',
+          additionalNote: mr.additionalNote || '',
+          submitterName: mr.submitterName || '',
+          submitterDept: mr.submitterDept || '',
+          submitDate: mr.submitDate || '',
+          status: mr.status || 'pending',
+          supplements: mr.supplements || [],
+          createdAt: mr.createdAt || new Date()
+        });
+        recordSyncCount++;
+        console.log(`  ✅ 回迁记录: ${mr.productName} (${mr.id})`);
+      } else {
+        console.log(`  ⏭️  记录已存在，跳过: ${mr.id}`);
+      }
+    } catch (err) {
+      console.error(`  ❌ 回迁记录失败 ${mr.id}:`, err.message);
+    }
+  }
+
+  console.log(`📦 回迁完成: ${recordSyncCount} 条记录, ${userSyncCount} 个用户已同步到 MongoDB`);
+}
+
+// ========== 监听 Mongoose 连接事件 ==========
 mongoose.connection.on('disconnected', () => {
   console.warn('⚠️  MongoDB 连接断开，将尝试自动重连...');
   useMemoryStore = true;
   scheduleReconnect();
 });
 
-mongoose.connection.on('reconnected', () => {
+mongoose.connection.on('reconnected', async () => {
   console.log('✅ MongoDB 自动重连成功');
   useMemoryStore = false;
   reconnectAttempts = 0;
+  // 自动回迁内存数据到 MongoDB
+  await syncMemoryToMongo();
 });
 
 mongoose.connection.on('error', (err) => {
@@ -612,6 +683,8 @@ app.post('/api/reconnect-db', async (req, res) => {
     });
     useMemoryStore = false;
     reconnectAttempts = 0;
+    // 自动回迁内存数据
+    await syncMemoryToMongo();
     res.json({ success: true, message: 'MongoDB 重连成功！' });
   } catch (err) {
     res.json({ success: false, message: '重连失败: ' + err.message + ' — 请检查 MongoDB Atlas Network Access 是否允许 0.0.0.0/0' });
